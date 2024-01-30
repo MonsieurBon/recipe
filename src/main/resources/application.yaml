@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: recipes
+  datasource:
+    url: jdbc:mysql://localhost:3306/recipes
+    username: recipes
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    user: recipes-flyway
+    password: ${FLYWAY_PASSWORD}
+    placeholders:
+      '[db_password]': ${DB_PASSWORD}
+  jpa:
+    show-sql: true
+  web:
+    resources:
+      static-locations: "classpath:/public/,classpath:/static/browser/"

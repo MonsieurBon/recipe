@@ -1,0 +1,1 @@
+GRANT CREATE USER on *.* to 'recipes-flyway' WITH GRANT OPTION;
