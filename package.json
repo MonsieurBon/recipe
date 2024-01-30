@@ -1,0 +1,110 @@
+{
+  "name": "recipe",
+  "version": "0.0.1-SNAPSHOT",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "test:headless": "ng test --browsers=ChromeHeadless --watch=false",
+    "lint": "ng lint"
+  },
+  "private": true,
+  "engines": {
+    "node": "^20",
+    "npm": "^10"
+  },
+  "dependencies": {
+    "@angular/animations": "17.3.3",
+    "@angular/common": "17.3.3",
+    "@angular/compiler": "17.3.3",
+    "@angular/core": "17.3.3",
+    "@angular/forms": "17.3.3",
+    "@angular/platform-browser": "17.3.3",
+    "@angular/platform-browser-dynamic": "17.3.3",
+    "@angular/router": "17.3.3",
+    "rxjs": "7.8.1",
+    "tslib": "2.6.2",
+    "zone.js": "0.14.4"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "17.3.3",
+    "@angular-eslint/builder": "17.3.0",
+    "@angular-eslint/eslint-plugin": "17.3.0",
+    "@angular-eslint/eslint-plugin-template": "17.3.0",
+    "@angular-eslint/schematics": "17.3.0",
+    "@angular-eslint/template-parser": "17.3.0",
+    "@angular/cli": "17.3.3",
+    "@angular/compiler-cli": "17.3.3",
+    "@semantic-release-plus/docker": "3.1.3",
+    "@semantic-release/changelog": "6.0.3",
+    "@semantic-release/commit-analyzer": "12.0.0",
+    "@semantic-release/exec": "6.0.3",
+    "@semantic-release/git": "10.0.1",
+    "@semantic-release/npm": "12.0.0",
+    "@semantic-release/release-notes-generator": "13.0.0",
+    "@types/jasmine": "5.1.4",
+    "@typescript-eslint/eslint-plugin": "7.5.0",
+    "@typescript-eslint/parser": "7.5.0",
+    "eslint": "8.57.0",
+    "jasmine-core": "5.1.2",
+    "karma": "6.4.3",
+    "karma-chrome-launcher": "3.2.0",
+    "karma-coverage": "2.2.1",
+    "karma-jasmine": "5.1.0",
+    "karma-jasmine-html-reporter": "2.1.0",
+    "typescript": "5.4.4"
+  },
+  "release": {
+    "branches": [
+      "main",
+      "work"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "mvn -B versions:set -DnewVersion=\"${nextRelease.version}\" -DgenerateBackupPoms=false",
+          "publishCmd": "npm run build && mvn -B clean package -DskipTests=true && docker build --tag monsieurbon/recipe:build .",
+          "successCmd": "NEXT_VERSION=$(npm version $(npm version patch --no-git-tag-version)-SNAPSHOT --no-git-tag-version) && mvn -B versions:set -DnewVersion=$NEXT_VERSION -DgenerateBackupPoms=false && git commit -am \"chore(release): $NEXT_VERSION [skip ci]\" && git push"
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "package-lock.json",
+            "CHANGELOG.md",
+            "pom.xml"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ],
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            {
+              "path": "target/recipe*.jar",
+              "label": "JAR"
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release-plus/docker",
+        {
+          "name": "monsieurbon/recipe:build",
+          "registry": "ghcr.io",
+          "skipLogin": true
+        }
+      ]
+    ]
+  }
+}
