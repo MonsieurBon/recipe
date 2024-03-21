@@ -27,3 +27,6 @@ updates:
         patterns:
           - "@types/jasmine"
           - "jasmine-core"
+      semantic-release:
+        patterns:
+          - "@semantic-release/*"
