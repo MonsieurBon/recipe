@@ -10,7 +10,7 @@
   </parent>
   <groupId>ch.ethy</groupId>
   <artifactId>recipe</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>recipe</name>
   <description>Recipe database</description>
   <properties>
