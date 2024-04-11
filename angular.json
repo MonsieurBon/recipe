@@ -89,7 +89,8 @@
             "styles": [
               "src/main/angular/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "karmaConfig": "karma.conf.js"
           }
         },
         "lint": {
