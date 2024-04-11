@@ -1,9 +1,7 @@
-name: Build recipe
+name: Build and analyze recipe
 
 on:
   push:
-    branches: [ "!main" ]
-  pull_request:
     branches: [ "main" ]
 
 jobs:
@@ -25,6 +23,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Cache SonarQube packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
       - name: Cache Maven packages
         uses: actions/cache@v1
         with:
@@ -50,4 +54,9 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: mvn -B spotless:check clean verify
+        run: mvn -B spotless:check clean verify sonar:sonar
+
+      - uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
