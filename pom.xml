@@ -20,6 +20,8 @@
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
+
+    <mysql-connector-j.version>8.3.0</mysql-connector-j.version>
   </properties>
   <dependencies>
     <dependency>
@@ -32,7 +34,13 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>${mysql-connector-j.version}</version>
+    </dependency>
   </dependencies>
+
 
   <build>
     <pluginManagement>
