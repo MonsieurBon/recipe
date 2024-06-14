@@ -21,7 +21,7 @@
     <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
 
-    <mysql-connector-j.version>8.3.0</mysql-connector-j.version>
+    <mysql-connector-j.version>8.4.0</mysql-connector-j.version>
   </properties>
   <dependencies>
     <dependency>
