@@ -28,7 +28,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: test frontend
-        run: npm run test:headless
+        run: npm run test:ci
       - name: build frontend
         run: npm run build
 

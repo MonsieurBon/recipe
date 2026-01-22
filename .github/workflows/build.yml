@@ -31,13 +31,10 @@ jobs:
         run: mvn -B spotless:check
 
       - name: test frontend
-        run: npm run test:headless
+        run: npm run test:ci
 
       - name: test backend
         run: mvn -B test
-
-      - name: build frontend
-        run: npm run build
 
       - name: build backend
         run: mvn -B -DskipTests=true clean install

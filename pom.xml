@@ -161,7 +161,7 @@
               <goal>npm</goal>
             </goals>
 
-            <!-- optional: the default plase is "test". Some developers
+            <!-- optional: the default phase is "test". Some developers
             choose to run karma in the "integration-test" phase. -->
             <phase>test</phase>
 
