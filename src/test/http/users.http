@@ -1,0 +1,17 @@
+### GET all users
+GET http://localhost:8080/api/users
+#Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVc2VyIERldGFpbHMiLCJ1c2VybmFtZU9yRW1haWwiOiJmb28iLCJpYXQiOjE3Njg1MTE0NTEsImlzcyI6InJlY2lwZXMifQ.oDWtxafb-41r7mJ3rK06IfkkGYyYOCSsZ3jjFRyIEzQ
+
+###
+
+### GET all users
+GET http://localhost:8080/api/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVc2VyIERldGFpbHMiLCJ1c2VybmFtZU9yRW1haWwiOiJmb28iLCJpYXQiOjE3Njg1MTE0NTEsImlzcyI6InJlY2lwZXMifQ.oDWtxafb-41r7mJ3rK06IfkkGYyYOCSsZ3jjFRyIEzQ
+
+###
+
+### GET a user
+GET http://localhost:8080/api/users/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVc2VyIERldGFpbHMiLCJ1c2VybmFtZU9yRW1haWwiOiJmb28iLCJpYXQiOjE3Njg1MTE0NTEsImlzcyI6InJlY2lwZXMifQ.oDWtxafb-41r7mJ3rK06IfkkGYyYOCSsZ3jjFRyIEzQ
+
+###

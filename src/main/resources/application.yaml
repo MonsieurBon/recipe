@@ -12,6 +12,8 @@ spring:
     placeholders:
       '[db_password]': ${DB_PASSWORD}
   jpa:
+    hibernate:
+      ddl-auto: update
     show-sql: true
   web:
     resources:
