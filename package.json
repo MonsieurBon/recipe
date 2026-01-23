@@ -10,7 +10,8 @@
     "test:ci": "ng test --no-watch --no-progress",
     "format": "prettier --write src/**/*.{ts,html}",
     "format:check": "prettier --check src/**/*.{ts,html}",
-    "lint": "ng lint"
+    "lint": "ng lint --fix",
+    "lint:check": "ng lint"
   },
   "prettier": {
     "printWidth": 100,

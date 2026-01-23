@@ -3,15 +3,17 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "schematicCollections": [
-      "angular-eslint"
-    ]
+    "schematicCollections": ["angular-eslint"]
   },
   "newProjectRoot": "projects",
   "projects": {
     "recipes": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
       "root": "",
       "sourceRoot": "src/main/webapp",
       "prefix": "app",
@@ -21,6 +23,7 @@
           "options": {
             "browser": "src/main/webapp/main.ts",
             "tsConfig": "src/main/webapp/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
@@ -28,10 +31,7 @@
               },
               "src/main/webapp/assets"
             ],
-            "styles": [
-              "src/main/webapp/material-theme.scss",
-              "src/main/webapp/styles.css"
-            ],
+            "styles": ["src/main/webapp/material-theme.scss", "src/main/webapp/styles.scss"],
             "outputPath": "target/classes/static"
           },
           "configurations": {
@@ -79,10 +79,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/main/webapp/**/*.ts",
-              "src/main/webapp/**/*.html"
-            ]
+            "lintFilePatterns": ["src/main/webapp/**/*.ts", "src/main/webapp/**/*.html"]
           }
         }
       }

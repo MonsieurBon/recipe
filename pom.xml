@@ -142,7 +142,7 @@
             </goals>
             <phase>test</phase>
             <configuration>
-              <arguments>run lint</arguments>
+              <arguments>run lint:check</arguments>
             </configuration>
           </execution>
           <execution>
