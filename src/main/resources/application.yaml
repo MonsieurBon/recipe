@@ -18,3 +18,7 @@ spring:
   web:
     resources:
       static-locations: "classpath:/public/,classpath:/static/browser/"
+  mvc:
+    contentnegotiation:
+      media-types:
+        woff2: "font/woff2"

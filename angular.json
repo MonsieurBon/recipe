@@ -3,7 +3,9 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "schematicCollections": ["angular-eslint"]
+    "schematicCollections": [
+      "angular-eslint"
+    ]
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -31,7 +33,10 @@
               },
               "src/main/webapp/assets"
             ],
-            "styles": ["src/main/webapp/material-theme.scss", "src/main/webapp/styles.scss"],
+            "styles": [
+              "src/main/webapp/material-theme.scss",
+              "src/main/webapp/styles.scss"
+            ],
             "outputPath": "target/classes/static"
           },
           "configurations": {
@@ -79,7 +84,10 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["src/main/webapp/**/*.ts", "src/main/webapp/**/*.html"]
+            "lintFilePatterns": [
+              "src/main/webapp/**/*.ts",
+              "src/main/webapp/**/*.html"
+            ]
           }
         }
       }
