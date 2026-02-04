@@ -1,0 +1,43 @@
+@use '@angular/material' as mat;
+
+:host {
+  @include mat.toolbar-overrides(
+    (
+      container-background-color: var(--mat-sys-primary-container),
+      container-text-color: var(--mat-sys-primary),
+    )
+  );
+
+  mat-toolbar {
+    @include mat.icon-button-overrides(
+      (
+        icon-color: var(--mat-sys-primary),
+        state-layer-color: var(--mat-sys-primary),
+      )
+    );
+
+    #profileImage {
+      @include mat.icon-button-overrides(
+        (
+          state-layer-color: white,
+          focus-state-layer-opacity: 1,
+          hover-state-layer-opacity: 1,
+          pressed-state-layer-opacity: 1,
+        )
+      );
+    }
+  }
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.profile-image {
+  position: relative;
+  top: -6px;
+  left: -6px;
+  height: 36px;
+  width: 36px;
+  border-radius: 50%;
+}
