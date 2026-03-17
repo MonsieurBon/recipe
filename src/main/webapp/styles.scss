@@ -1,2 +1,14 @@
+@use '@angular/material' as mat;
+
 @import 'assets/icons/material-icons';
 @import 'assets/fonts/roboto';
+
+:root {
+  .user-menu {
+    @include mat.menu-overrides(
+      (
+        container-color: var(--mat-sys-surface),
+      )
+    );
+  }
+}

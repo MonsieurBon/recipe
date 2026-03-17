@@ -1,0 +1,22 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Registrieren</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formRoot]="registerForm">
+      <mat-form-field>
+        <mat-label>Benutzername</mat-label>
+        <input matInput type="text" [formField]="registerForm.username" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Email</mat-label>
+        <input matInput type="email" [formField]="registerForm.email" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Passwort</mat-label>
+        <input matInput type="password" [formField]="registerForm.password" />
+      </mat-form-field>
+      <button mat-flat-button type="submit">Registrieren</button>
+    </form>
+  </mat-card-content>
+</mat-card>

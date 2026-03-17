@@ -1,5 +1,6 @@
 package ch.ethy.recipes.security;
 
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -41,7 +42,7 @@ public class JWTFilter extends OncePerRequestFilter {
           if (SecurityContextHolder.getContext().getAuthentication() == null) {
             SecurityContextHolder.getContext().setAuthentication(authentication);
           }
-        } catch (SignatureException e) {
+        } catch (SignatureException | MalformedJwtException e) {
           response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
         }
       }
