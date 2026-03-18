@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/MonsieurBon/recipe/compare/v1.2.0...v1.3.0) (2026-03-18)
+
+
+### Bug Fixes
+
+* formatting ([4bc72c7](https://github.com/MonsieurBon/recipe/commit/4bc72c771e14cc6493f6448bd9ea816c8ff2e7e3))
+* update package-lock.json ([4a33e2e](https://github.com/MonsieurBon/recipe/commit/4a33e2e04d8b951d5dcc7a83b4dd3e36692d206a))
+
+
+### Features
+
+* add register functionality ([007d0fd](https://github.com/MonsieurBon/recipe/commit/007d0fd05eb0c2418cc74613f880c49784664223))
+
 # [1.2.0](https://github.com/MonsieurBon/recipe/compare/v1.1.0...v1.2.0) (2026-02-04)
 
 
