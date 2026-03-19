@@ -7,16 +7,32 @@
       <mat-form-field>
         <mat-label>Benutzername</mat-label>
         <input matInput type="text" [formField]="registerForm.username" />
+        @if (registerForm.username().touched() && registerForm.username().errors().length > 0) {
+          <mat-error>{{ registerForm.username().errors()[0].message }}</mat-error>
+        }
       </mat-form-field>
       <mat-form-field>
         <mat-label>Email</mat-label>
         <input matInput type="email" [formField]="registerForm.email" />
+        @if (registerForm.email().touched() && registerForm.email().errors().length > 0) {
+          <mat-error>{{ registerForm.email().errors()[0].message }}</mat-error>
+        }
       </mat-form-field>
       <mat-form-field>
         <mat-label>Passwort</mat-label>
         <input matInput type="password" [formField]="registerForm.password" />
+        @if (registerForm.password().touched() && registerForm.password().errors().length > 0) {
+          <mat-error>{{ registerForm.password().errors()[0].message }}</mat-error>
+        }
       </mat-form-field>
-      <button mat-flat-button type="submit">Registrieren</button>
+      <div class="submit-row">
+        @if (registerForm().submitting()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        }
+        <button mat-flat-button type="submit" [disabled]="registerForm().submitting()">
+          Registrieren
+        </button>
+      </div>
     </form>
   </mat-card-content>
 </mat-card>

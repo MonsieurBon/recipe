@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
+import { AuthService } from '../auth.service';
 
 import { Register } from './register';
 
@@ -20,5 +21,147 @@ describe('Register', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should require all fields', () => {
+    const form = component.registerForm;
+    expect(form.username().errors().length).toBeGreaterThan(0);
+    expect(form.email().errors().length).toBeGreaterThan(0);
+    expect(form.password().errors().length).toBeGreaterThan(0);
+  });
+
+  it('should validate email format', () => {
+    component.registerModel.set({ username: 'user', email: 'not-an-email', password: 'pass' });
+    TestBed.flushEffects();
+    expect(component.registerForm.email().errors().length).toBeGreaterThan(0);
+
+    component.registerModel.set({ username: 'user', email: 'user@example.com', password: 'pass' });
+    TestBed.flushEffects();
+    expect(component.registerForm.email().errors().length).toBe(0);
+  });
+
+  it('should be valid when all fields are filled with valid data', () => {
+    component.registerModel.set({ username: 'user', email: 'user@example.com', password: 'pass' });
+    TestBed.flushEffects();
+    expect(component.registerForm().valid()).toBe(true);
+  });
+
+  it('should show error messages for empty required fields', () => {
+    component.registerForm.username().markAsTouched();
+    component.registerForm.email().markAsTouched();
+    component.registerForm.password().markAsTouched();
+    fixture.detectChanges();
+
+    const errorElements = fixture.nativeElement.querySelectorAll('mat-error');
+    expect(errorElements.length).toBe(3);
+    expect(errorElements[0].textContent).toContain('Benutzername ist erforderlich');
+    expect(errorElements[1].textContent).toContain('Email ist erforderlich');
+    expect(errorElements[2].textContent).toContain('Passwort ist erforderlich');
+  });
+
+  it('should show email format error when email is invalid', () => {
+    component.registerModel.set({ username: 'user', email: 'not-an-email', password: 'pass' });
+    component.registerForm.email().markAsTouched();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const errorElements = fixture.nativeElement.querySelectorAll('mat-error');
+    expect(errorElements.length).toBe(1);
+    expect(errorElements[0].textContent).toContain('Email ist ungültig');
+  });
+
+  it('should disable form fields and button and show spinner during submission', async () => {
+    let resolveRegister!: () => void;
+    const authService = TestBed.inject(AuthService);
+    vi.spyOn(authService, 'register').mockReturnValue(
+      new Promise<boolean>((resolve) => {
+        resolveRegister = () => resolve(true);
+      }),
+    );
+
+    component.registerModel.set({ username: 'user', email: 'user@example.com', password: 'pass' });
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const submitButton: HTMLButtonElement =
+      fixture.nativeElement.querySelector('button[type="submit"]');
+    submitButton.click();
+    fixture.detectChanges();
+
+    const inputs = fixture.nativeElement.querySelectorAll('input');
+    inputs.forEach((input: HTMLInputElement) => {
+      expect(input.disabled).toBe(true);
+    });
+    expect(submitButton.disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('mat-spinner')).toBeTruthy();
+
+    resolveRegister();
+    await new Promise((r) => setTimeout(r));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    inputs.forEach((input: HTMLInputElement) => {
+      expect(input.disabled).toBe(false);
+    });
+    expect(submitButton.disabled).toBe(false);
+    expect(fixture.nativeElement.querySelector('mat-spinner')).toBeNull();
+  });
+
+  it('should show duplicate username error from server', async () => {
+    const authService = TestBed.inject(AuthService);
+    vi.spyOn(authService, 'register').mockResolvedValue({
+      conflictingFields: ['username'],
+    });
+
+    component.registerModel.set({ username: 'taken', email: 'user@example.com', password: 'pass' });
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const submitButton: HTMLButtonElement =
+      fixture.nativeElement.querySelector('button[type="submit"]');
+    submitButton.click();
+    await new Promise((r) => setTimeout(r));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const errorElements = fixture.nativeElement.querySelectorAll('mat-error');
+    expect(errorElements.length).toBe(1);
+    expect(errorElements[0].textContent).toContain('Benutzername ist bereits vergeben');
+  });
+
+  it('should show duplicate email error from server', async () => {
+    const authService = TestBed.inject(AuthService);
+    vi.spyOn(authService, 'register').mockResolvedValue({
+      conflictingFields: ['email'],
+    });
+
+    component.registerModel.set({ username: 'user', email: 'taken@example.com', password: 'pass' });
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const submitButton: HTMLButtonElement =
+      fixture.nativeElement.querySelector('button[type="submit"]');
+    submitButton.click();
+    await new Promise((r) => setTimeout(r));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const errorElements = fixture.nativeElement.querySelectorAll('mat-error');
+    expect(errorElements.length).toBe(1);
+    expect(errorElements[0].textContent).toContain('Email ist bereits vergeben');
+  });
+
+  it('should hide error messages when fields become valid', () => {
+    component.registerForm.username().markAsTouched();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('mat-error').length).toBe(1);
+
+    component.registerModel.set({ username: 'user', email: '', password: '' });
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const usernameErrors = fixture.nativeElement.querySelector(
+      'mat-form-field:first-of-type mat-error',
+    );
+    expect(usernameErrors).toBeNull();
   });
 });

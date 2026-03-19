@@ -2,6 +2,8 @@ package ch.ethy.recipes.security;
 
 import ch.ethy.recipes.user.User;
 import ch.ethy.recipes.user.UserRepository;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -39,6 +41,17 @@ public class AuthService {
   }
 
   public void register(RegistrationDetails registrationDetails) {
+    List<String> conflicts = new ArrayList<>();
+    if (userRepository.existsByUsername(registrationDetails.username())) {
+      conflicts.add("username");
+    }
+    if (userRepository.existsByEmail(registrationDetails.email())) {
+      conflicts.add("email");
+    }
+    if (!conflicts.isEmpty()) {
+      throw new DuplicateUserException(conflicts);
+    }
+
     String encodedPassword = passwordEncoder.encode(registrationDetails.password());
     User user = new User();
     user.setUsername(registrationDetails.username());
