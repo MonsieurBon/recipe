@@ -4,6 +4,7 @@ import static ch.ethy.recipes.user.Role.USER;
 
 import ch.ethy.recipes.db.BaseEntity;
 import jakarta.annotation.Nonnull;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,8 +16,14 @@ import java.util.Set;
 @Entity
 @Table(name = "users")
 public class User extends BaseEntity {
-  @Nonnull private String username;
-  @Nonnull private String email;
+  @Nonnull
+  @Column(unique = true)
+  private String username;
+
+  @Nonnull
+  @Column(unique = true)
+  private String email;
+
   @Nonnull private String password;
 
   @Enumerated(EnumType.STRING)

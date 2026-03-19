@@ -1,6 +1,8 @@
 package ch.ethy.recipes.security;
 
+import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +29,13 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public void register(@RequestBody RegistrationDetails registrationDetails) {
-    this.authService.register(registrationDetails);
+  public ResponseEntity<?> register(@RequestBody RegistrationDetails registrationDetails) {
+    try {
+      this.authService.register(registrationDetails);
+      return ResponseEntity.ok().build();
+    } catch (DuplicateUserException e) {
+      return ResponseEntity.status(HttpStatus.CONFLICT)
+          .body(Map.of("conflictingFields", e.getConflictingFields()));
+    }
   }
 }
