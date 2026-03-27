@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/MonsieurBon/recipes/compare/v1.3.0...v1.4.0) (2026-03-27)
+
+
+### Features
+
+* prevent duplicate usernames and emails ([d6f8565](https://github.com/MonsieurBon/recipes/commit/d6f85652df0139ebc264f25cb5cd1510924ca60e))
+
 # [1.3.0](https://github.com/MonsieurBon/recipe/compare/v1.2.0...v1.3.0) (2026-03-18)
 
 
