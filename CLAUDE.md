@@ -45,6 +45,7 @@ A recipe management web application with a Spring Boot 4 (Java 21) backend and A
 
 - **TDD**: When developing code, write a failing test first, then implement the functionality to make it pass.
 - **Thin components**: Keep Angular components as simple as possible; move logic (subscriptions, navigation, side effects) into services.
+- **Architecture docs**: Keep the arc42 documentation in `docs/arc42/` up to date when implementing new features.
 
 ## Code Style
 
