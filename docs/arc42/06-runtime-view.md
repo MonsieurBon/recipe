@@ -26,7 +26,8 @@ Browser                       MealPlanController    MealPlanService            S
   |                                   |                    |--- getRecent -------------|-------------->|
   |                                   |                    |<-- recent ----------------|---------------|
   |                                   |                    |--- suggest -------------->|               |
-  |                                   |                    |  (filter by season,       |               |
+  |                                   |                    |  (filter by ingredient    |               |
+  |                                   |                    |   seasonality,            |               |
   |                                   |                    |   exclude recent,         |               |
   |                                   |                    |   mix favorites + others) |               |
   |                                   |                    |<-- suggestions -----------|               |

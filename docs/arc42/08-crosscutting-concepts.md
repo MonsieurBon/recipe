@@ -15,40 +15,41 @@
 |------------------|        |-------------------|
 | username         |        | title             |
 | email            |        | description       |
-| password (hash)  |        | season            |
-| role             |        | servings          |
-+-------+----------+        | prepTime          |
-        |                   | cookTime          |
-        | 1                 +--------+----------+
-        |                            | 1
-        | favorites *                |
-        v                            |
-+------------------+        +--------+----------+
-|    Favorite      |        |   Ingredient      |
-|------------------|        |-------------------|
-| user             |        | name              |
-| recipe           |        | amount            |
-+------------------+        | unit              |
-                            +-------------------+
-        +                            |
-        |                            | 1
-        | 1                          |
-+-------+-----------+       +--------+----------+
-|    MealPlan       |       |   Step            |
+| password (hash)  |        | servings          |
+| role             |        | prepTime          |
++-------+----------+        | cookTime          |
+        |                   +--------+----------+
+        | 1                     | 1          | 1
+        |                       |            |
+        | favorites *           |            | steps *
+        v                       |            v
++------------------+            |   +-------------------+
+|    Favorite      |            |   |   Step            |
+|------------------|            |   |-------------------|
+| user             |            |   | recipe            |
+| recipe           |            |   | orderIndex        |
++------------------+            |   | instruction       |
+                                |   +--------+----------+
+        +                       |            | *
+        |                       |            | ingredients (many-to-many)
+        | 1                     |            v
+        |                   +--------+----------+
++-------+-----------+       | RecipeIngredient  |
+|    MealPlan       |       |-------------------|
+|-------------------|       | recipe            |
+| user              |       | ingredient        |
+| weekStartDate     |       | amount            |
++--------+----------+       | unit              |
+         | 1                | orderIndex        |
+         |                  +--------+----------+
+         | slots *                   | *
+         v                           v
++-------------------+       +-------------------+
+|   MealSlot        |       |   Ingredient      |
 |-------------------|       |-------------------|
-| user              |       | orderIndex        |
-| weekStartDate     |       | instruction       |
-+--------+----------+       +-------------------+
-         | 1
-         |
-         | slots *
-         v
-+-------------------+
-|   MealSlot        |
-|-------------------|
-| dayOfWeek         |
-| mealType          |
-| recipe            |
+| dayOfWeek         |       | name              |
+| mealType          |       | seasonMonths      |
+| recipe            |       +-------------------+
 +-------------------+
 ```
 
