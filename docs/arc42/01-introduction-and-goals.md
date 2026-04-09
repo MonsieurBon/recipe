@@ -8,8 +8,8 @@ The system is a personal recipe database and meal planner. It allows users to ma
 
 | Feature            | Description                                                                      |
 |--------------------|----------------------------------------------------------------------------------|
-| Recipe Management  | Add, edit, and store recipes with ingredients, steps, and metadata (e.g. season) |
-| Recipe Search      | Search and filter recipes by ingredients, season, and other criteria             |
+| Recipe Management  | Add, edit, and store recipes with ingredients, steps, and metadata               |
+| Recipe Search      | Search and filter recipes by ingredients, seasonality, and other criteria        |
 | Recipe Display     | View a recipe in cooking mode showing ingredients and step-by-step instructions  |
 | Favorites          | Mark recipes as favorites for quick access                                       |
 | Meal Planning      | Plan meals for a configurable set of weekly meal slots                           |
