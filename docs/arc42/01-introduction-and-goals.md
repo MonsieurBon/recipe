@@ -6,16 +6,17 @@ The system is a personal recipe database and meal planner. It allows users to ma
 
 **Core Features:**
 
-| Feature            | Description                                                                      |
-|--------------------|----------------------------------------------------------------------------------|
-| Recipe Management  | Add, edit, and store recipes with ingredients, steps, and metadata               |
-| Recipe Search      | Search and filter recipes by ingredients, seasonality, and other criteria        |
-| Recipe Display     | View a recipe in cooking mode showing ingredients and step-by-step instructions  |
-| Favorites          | Mark recipes as favorites for quick access                                       |
-| Meal Planning      | Plan meals for a configurable set of weekly meal slots                           |
-| Meal Suggestions   | Get automatic meal suggestions based on season, recent history, and favorites    |
-| Suggestion Tuning  | Control how many non-favorite recipes appear in suggestions                      |
-| Manual Adjustments | Manually swap or replace individual meals in a generated plan                    |
+| Feature            | Description                                                                     |
+|--------------------|---------------------------------------------------------------------------------|
+| Recipe Management  | Add, edit, and store recipes with ingredients, steps, and metadata              |
+| Recipe Search      | Search and filter recipes by ingredients, seasonality, and other criteria       |
+| Recipe Display     | View a recipe in cooking mode showing ingredients and step-by-step instructions |
+| Favorites          | Mark recipes as favorites for quick access                                      |
+| Meal Planning      | Plan meals for a configurable set of weekly meal slots                          |
+| Meal Suggestions   | Get automatic meal suggestions based on season, recent history, and favorites   |
+| Suggestion Tuning  | Control how many non-favorite recipes appear in suggestions                     |
+| Manual Adjustments | Manually swap or replace individual meals in a generated plan                   |
+| Administration     | Administrators list and edit users, recipes, and ingredients                    |
 
 **Future Considerations:**
 
@@ -35,4 +36,5 @@ The system is a personal recipe database and meal planner. It allows users to ma
 | Role               | Expectations                                                           |
 |--------------------|------------------------------------------------------------------------|
 | User               | A smooth, responsive interface for managing recipes and planning meals |
+| Administrator      | Tools to curate the shared recipe/ingredient library and manage users  |
 | Developer/Operator | A simple, well-structured codebase that is easy to deploy and maintain |
