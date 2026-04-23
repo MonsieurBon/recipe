@@ -29,3 +29,13 @@
 **Decision:** Recipes are globally accessible to all authenticated users. Favorites and meal plans are scoped to the individual user but can reference any recipe in the database.
 
 **Consequences:** Any user can open, edit, favorite, and plan meals with any recipe. No per-recipe ownership or visibility controls are needed. User-specific features (favorites, meal plans) remain scoped to the authenticated user.
+
+## ADR-4: Integrated Administration Backend
+
+**Status:** Accepted
+
+**Context:** Administrators need to curate the shared recipe/ingredient library and manage user accounts (e.g. promote to admin, disable, delete). The existing `Role` enum already distinguishes `USER` and `ADMIN`.
+
+**Decision:** Ship the administration UI as an `/admin` area inside the same Angular SPA, backed by dedicated REST endpoints under `/api/admin/**` that require the `ADMIN` role. Admin endpoints delegate to the existing domain services (`UserService`, `RecipeService`, `IngredientService`) rather than introducing parallel data-access code.
+
+**Consequences:** One deployment, one codebase, one auth mechanism. Role-based access control is enforced in `SecurityConfig` and in an `AdminGuard` on the frontend. Admin operations share validation, mapping, and persistence with the regular endpoints, so behavior stays consistent. The downside is that a compromised admin account has full access through the same UI as normal users -- acceptable for a single-operator deployment.
