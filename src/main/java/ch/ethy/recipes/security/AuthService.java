@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +38,9 @@ public class AuthService {
     org.springframework.security.core.userdetails.User user =
         (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
     assert user != null;
-    return jwtService.generateToken(user.getUsername());
+    List<String> roles =
+        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    return jwtService.generateToken(user.getUsername(), roles);
   }
 
   public void register(RegistrationDetails registrationDetails) {
