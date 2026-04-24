@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
       issues: read
       id-token: write
 
@@ -38,7 +38,26 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          prompt: |
+            Review PR ${{ github.repository }}#${{ github.event.pull_request.number }}
+            by delegating to THREE subagents in parallel via the Task tool. Each
+            subagent is defined in .claude/agents/ and must be invoked with its
+            exact name as `subagent_type`:
+
+              1. pr-code-reviewer       — polite, collegial code-quality review
+              2. grumpy-pr-reviewer     — harsh, opinionated critique
+              3. web-security-reviewer  — security-focused audit
+
+            Hand each subagent the PR diff (use `gh pr diff ${{ github.event.pull_request.number }}`)
+            and ask for its findings. Review only the changed code, not the whole
+            codebase.
+
+            Post the three reviews as THREE separate PR comments using
+            `gh pr comment`. Prefix each comment with a header identifying the
+            reviewer, e.g. `## pr-code-reviewer`, `## grumpy-pr-reviewer`,
+            `## web-security-reviewer`. Do not merge the three into a single
+            comment — keep them distinct so each persona's voice is preserved.
+          claude_args: "--max-turns 25"
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
