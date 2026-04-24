@@ -1,13 +1,15 @@
 package ch.ethy.recipes.security;
 
+import ch.ethy.recipes.user.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.SignatureException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Set;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.stereotype.Service;
@@ -22,11 +24,11 @@ public class JwtService {
     this.key = new SecretKeySpec(Decoders.BASE64.decode(ENCODED_KEY), "HmacSHA256");
   }
 
-  public String generateToken(String username, Collection<String> roles) {
+  public String generateToken(String username, Set<Role> roles) {
     return Jwts.builder()
         .subject("User Details")
         .claim("usernameOrEmail", username)
-        .claim("roles", List.copyOf(roles))
+        .claim("roles", roles.stream().map(Role::name).toList())
         .issuedAt(new Date())
         .issuer("recipes")
         .signWith(key)
@@ -37,24 +39,32 @@ public class JwtService {
     return parseClaims(token).get("usernameOrEmail", String.class);
   }
 
-  public List<String> getRoles(String token) throws SignatureException {
+  public Set<Role> getRoles(String token) throws SignatureException {
     Object raw = parseClaims(token).get("roles");
     if (!(raw instanceof Collection<?> collection)) {
-      return List.of();
+      return Set.of();
     }
-    List<String> roles = new ArrayList<>(collection.size());
-    for (Object item : collection) {
-      if (item != null) {
-        roles.add(item.toString());
-      }
+    return collection.stream()
+        .filter(item -> item instanceof String)
+        .map(item -> toRole((String) item))
+        .filter(Objects::nonNull)
+        .collect(() -> EnumSet.noneOf(Role.class), Set::add, Set::addAll);
+  }
+
+  private static Role toRole(String name) {
+    try {
+      return Role.valueOf(name);
+    } catch (IllegalArgumentException ignored) {
+      return null;
     }
-    return List.copyOf(roles);
   }
 
   private Claims parseClaims(String token) throws SignatureException {
-    Claims claims =
-        Jwts.parser().verifyWith(this.key).build().parseSignedClaims(token).getPayload();
-    assert claims.getSubject().equals("User Details");
-    return claims;
+    return Jwts.parser()
+        .verifyWith(this.key)
+        .requireSubject("User Details")
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
   }
 }

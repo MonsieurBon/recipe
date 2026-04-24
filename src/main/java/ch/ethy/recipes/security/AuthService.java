@@ -1,13 +1,15 @@
 package ch.ethy.recipes.security;
 
+import ch.ethy.recipes.user.Role;
 import ch.ethy.recipes.user.User;
 import ch.ethy.recipes.user.UserRepository;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,11 +37,16 @@ public class AuthService {
             credentials.usernameOrEmail(), credentials.password());
 
     Authentication authentication = authenticationManager.authenticate(authToken);
-    org.springframework.security.core.userdetails.User user =
-        (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-    assert user != null;
-    List<String> roles =
-        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    if (!(authentication.getPrincipal()
+        instanceof org.springframework.security.core.userdetails.User user)) {
+      throw new IllegalStateException(
+          "Unexpected principal type: " + authentication.getPrincipal());
+    }
+    Set<Role> roles =
+        user.getAuthorities().stream()
+            .filter(a -> a instanceof Role)
+            .map(a -> (Role) a)
+            .collect(() -> EnumSet.noneOf(Role.class), Set::add, Set::addAll);
     return jwtService.generateToken(user.getUsername(), roles);
   }
 

@@ -1,27 +1,25 @@
 package ch.ethy.recipes.security;
 
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Set;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Service
 public class JWTFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
-  private final UserDetailsService userDetailService;
 
-  public JWTFilter(JwtService jwtService, UserDetailsService userDetailService) {
+  public JWTFilter(JwtService jwtService) {
     this.jwtService = jwtService;
-    this.userDetailService = userDetailService;
   }
 
   @Override
@@ -36,13 +34,14 @@ public class JWTFilter extends OncePerRequestFilter {
       } else {
         try {
           String username = jwtService.validateTokenAndRetrieveUsername(token);
-          UserDetails userDetails = userDetailService.loadUserByUsername(username);
+          Set<ch.ethy.recipes.user.Role> roles = jwtService.getRoles(token);
+          UserDetails userDetails = new User(username, "", roles);
           Authentication authentication = new JWTAuthenticationToken(userDetails, token);
 
           if (SecurityContextHolder.getContext().getAuthentication() == null) {
             SecurityContextHolder.getContext().setAuthentication(authentication);
           }
-        } catch (SignatureException | MalformedJwtException e) {
+        } catch (JwtException e) {
           response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
         }
       }
