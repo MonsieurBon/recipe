@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -40,13 +41,13 @@ public class AuthService {
     if (!(authentication.getPrincipal()
         instanceof org.springframework.security.core.userdetails.User user)) {
       throw new IllegalStateException(
-          "Unexpected principal type: " + authentication.getPrincipal());
+          "Unexpected principal type: " + authentication.getPrincipal().getClass().getName());
     }
     Set<Role> roles =
         user.getAuthorities().stream()
-            .filter(a -> a instanceof Role)
-            .map(a -> (Role) a)
-            .collect(() -> EnumSet.noneOf(Role.class), Set::add, Set::addAll);
+            .filter(Role.class::isInstance)
+            .map(Role.class::cast)
+            .collect(Collectors.toCollection(() -> EnumSet.noneOf(Role.class)));
     return jwtService.generateToken(user.getUsername(), roles);
   }
 

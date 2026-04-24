@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Set;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -31,19 +30,19 @@ public class JWTFilter extends OncePerRequestFilter {
       String token = authHeader.substring(7);
       if (token.isBlank()) {
         response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid token");
-      } else {
-        try {
-          String username = jwtService.validateTokenAndRetrieveUsername(token);
-          Set<ch.ethy.recipes.user.Role> roles = jwtService.getRoles(token);
-          UserDetails userDetails = new User(username, "", roles);
-          Authentication authentication = new JWTAuthenticationToken(userDetails, token);
+        return;
+      }
+      try {
+        JwtService.TokenData tokenData = jwtService.parseToken(token);
+        UserDetails userDetails = new User(tokenData.username(), "", tokenData.roles());
+        Authentication authentication = new JWTAuthenticationToken(userDetails, token);
 
-          if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-          }
-        } catch (JwtException e) {
-          response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+          SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+      } catch (JwtException e) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+        return;
       }
     }
 

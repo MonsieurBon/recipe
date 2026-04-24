@@ -24,25 +24,25 @@ class JwtServiceTest {
   void generateTokenEncodesUsername() {
     String token = jwtService.generateToken("alice", Set.of());
 
-    assertEquals("alice", jwtService.validateTokenAndRetrieveUsername(token));
+    assertEquals("alice", jwtService.parseToken(token).username());
   }
 
   @Test
   void generateTokenEncodesRoles() {
     String token = jwtService.generateToken("alice", Set.of(Role.USER, Role.ADMIN));
 
-    assertEquals(Set.of(Role.USER, Role.ADMIN), jwtService.getRoles(token));
+    assertEquals(Set.of(Role.USER, Role.ADMIN), jwtService.parseToken(token).roles());
   }
 
   @Test
-  void getRolesReturnsEmptySetWhenNoneEncoded() {
+  void parseTokenReturnsEmptyRolesWhenNoneEncoded() {
     String token = jwtService.generateToken("alice", Set.of());
 
-    assertTrue(jwtService.getRoles(token).isEmpty());
+    assertTrue(jwtService.parseToken(token).roles().isEmpty());
   }
 
   @Test
-  void getRolesIgnoresUnknownRoleStrings() {
+  void parseTokenIgnoresUnknownRoleStrings() {
     String tokenWithBogusRole =
         Jwts.builder()
             .subject("User Details")
@@ -52,11 +52,11 @@ class JwtServiceTest {
             .signWith(SIGNING_KEY)
             .compact();
 
-    assertEquals(Set.of(Role.USER, Role.ADMIN), jwtService.getRoles(tokenWithBogusRole));
+    assertEquals(Set.of(Role.USER, Role.ADMIN), jwtService.parseToken(tokenWithBogusRole).roles());
   }
 
   @Test
-  void validateTokenAndRetrieveUsernameRejectsTokenWithWrongSubject() {
+  void parseTokenRejectsTokenWithWrongSubject() {
     String tampered =
         Jwts.builder()
             .subject("Not User Details")
@@ -66,7 +66,6 @@ class JwtServiceTest {
             .compact();
 
     assertThrows(
-        io.jsonwebtoken.IncorrectClaimException.class,
-        () -> jwtService.validateTokenAndRetrieveUsername(tampered));
+        io.jsonwebtoken.IncorrectClaimException.class, () -> jwtService.parseToken(tampered));
   }
 }
