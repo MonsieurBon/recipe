@@ -64,4 +64,29 @@ class JWTFilterTest {
     assertEquals(401, response.getStatus());
     assertNull(SecurityContextHolder.getContext().getAuthentication());
   }
+
+  @Test
+  void doesNotContinueFilterChainAfterInvalidTokenError() throws Exception {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.addHeader("Authorization", "Bearer not-a-real-token");
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    MockFilterChain chain = new MockFilterChain();
+
+    filter.doFilter(request, response, chain);
+
+    assertNull(chain.getRequest());
+  }
+
+  @Test
+  void doesNotContinueFilterChainAfterBlankBearerToken() throws Exception {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.addHeader("Authorization", "Bearer ");
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    MockFilterChain chain = new MockFilterChain();
+
+    filter.doFilter(request, response, chain);
+
+    assertNull(chain.getRequest());
+    assertEquals(400, response.getStatus());
+  }
 }

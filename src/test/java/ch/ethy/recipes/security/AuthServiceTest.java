@@ -1,7 +1,9 @@
 package ch.ethy.recipes.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -55,5 +57,24 @@ class AuthServiceTest {
 
     assertThrows(
         IllegalStateException.class, () -> authService.login(new LoginCredentials("alice", "pw")));
+  }
+
+  @Test
+  void loginExceptionMessageReportsOnlyPrincipalClassNameNotItsContents() {
+    String sensitivePrincipal = "alice@sensitive.example";
+    Authentication authenticated =
+        new UsernamePasswordAuthenticationToken(sensitivePrincipal, "pw", Set.of());
+    when(authenticationManager.authenticate(any())).thenReturn(authenticated);
+
+    AuthService authService =
+        new AuthService(authenticationManager, jwtService, passwordEncoder, userRepository);
+
+    IllegalStateException thrown =
+        assertThrows(
+            IllegalStateException.class,
+            () -> authService.login(new LoginCredentials("alice", "pw")));
+
+    assertFalse(thrown.getMessage().contains(sensitivePrincipal));
+    assertTrue(thrown.getMessage().contains(String.class.getName()));
   }
 }
