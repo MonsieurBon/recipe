@@ -1,9 +1,13 @@
 package ch.ethy.recipes.security;
 
+import ch.ethy.recipes.user.Role;
 import ch.ethy.recipes.user.User;
 import ch.ethy.recipes.user.UserRepository;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,10 +38,17 @@ public class AuthService {
             credentials.usernameOrEmail(), credentials.password());
 
     Authentication authentication = authenticationManager.authenticate(authToken);
-    org.springframework.security.core.userdetails.User user =
-        (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-    assert user != null;
-    return jwtService.generateToken(user.getUsername());
+    if (!(authentication.getPrincipal()
+        instanceof org.springframework.security.core.userdetails.User user)) {
+      throw new IllegalStateException(
+          "Unexpected principal type: " + authentication.getPrincipal().getClass().getName());
+    }
+    Set<Role> roles =
+        user.getAuthorities().stream()
+            .filter(Role.class::isInstance)
+            .map(Role.class::cast)
+            .collect(Collectors.toCollection(() -> EnumSet.noneOf(Role.class)));
+    return jwtService.generateToken(user.getUsername(), roles);
   }
 
   public void register(RegistrationDetails registrationDetails) {
