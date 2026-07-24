@@ -5,6 +5,7 @@ import { By } from '@angular/platform-browser';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { of, throwError } from 'rxjs';
 import { Mock } from 'vitest';
 
@@ -12,15 +13,16 @@ import { AuthService, CurrentUser } from '../../security/auth.service';
 import { LayoutService } from '../../utility/layout.service';
 import { NotificationService } from '../../utility/notification.service';
 import { provideTranslateTesting } from '../../testing/provide-translate-testing';
-import { AdminService, AdminUser, UserPage } from '../admin.service';
+import { AdminService, AdminUser, UserPage, UserQuery } from '../admin.service';
 import { AdminUsers } from './admin-users';
 import { UserEditSheet } from './user-edit-sheet';
+import { UserSortSheet, UserSortSheetData } from './user-sort-sheet';
 
 describe('AdminUsers', () => {
   let fixture: ComponentFixture<AdminUsers>;
   let isCompact: WritableSignal<boolean>;
   let currentUser: WritableSignal<CurrentUser | null>;
-  let getUsers: Mock<(page: number, size: number) => ReturnType<AdminService['getUsers']>>;
+  let searchUsers: Mock<(query: UserQuery) => ReturnType<AdminService['searchUsers']>>;
   let setEnabled: Mock<(id: number, enabled: boolean) => ReturnType<AdminService['setEnabled']>>;
   let open: Mock;
   let showNotice: Mock<(key: string) => void>;
@@ -49,7 +51,7 @@ describe('AdminUsers', () => {
     currentUser = signal<CurrentUser | null>(null);
     handleError = vi.fn();
     // The server echoes back the page it actually served, so the mock mirrors the request.
-    getUsers = vi.fn((number: number, size: number) => of(page(twoUsers, 42, number, size)));
+    searchUsers = vi.fn((query: UserQuery) => of(page(twoUsers, 42, query.page, query.size)));
     setEnabled = vi.fn((id: number, enabled: boolean) =>
       of({ id, username: 'x', email: 'x@example.com', enabled, roles: ['USER'] }),
     );
@@ -60,7 +62,7 @@ describe('AdminUsers', () => {
       imports: [AdminUsers],
       providers: [
         provideTranslateTesting(),
-        { provide: AdminService, useValue: { getUsers, setEnabled } },
+        { provide: AdminService, useValue: { searchUsers, setEnabled } },
         { provide: LayoutService, useValue: { isCompact } },
         { provide: AuthService, useValue: { currentUser } },
         { provide: MatBottomSheet, useValue: { open } },
@@ -112,7 +114,7 @@ describe('AdminUsers', () => {
   });
 
   it('loads the first page on init', () => {
-    expect(getUsers).toHaveBeenCalledWith(0, 10);
+    expect(searchUsers).toHaveBeenCalledWith(expect.objectContaining({ page: 0, size: 10 }));
   });
 
   it('exposes the total count to the paginator', () => {
@@ -121,17 +123,17 @@ describe('AdminUsers', () => {
   });
 
   it('re-queries the server when the page changes', async () => {
-    getUsers.mockClear();
+    searchUsers.mockClear();
 
     paginator().page.emit({ pageIndex: 2, pageSize: 10, length: 42, previousPageIndex: 0 });
     await fixture.whenStable();
 
-    expect(getUsers).toHaveBeenCalledWith(2, 10);
+    expect(searchUsers).toHaveBeenCalledWith(expect.objectContaining({ page: 2, size: 10 }));
   });
 
   it('reflects the page size the server actually used, not the requested one', async () => {
     // Server caps the size below what was asked for.
-    getUsers.mockImplementation((number: number) => of(page(twoUsers, 42, number, 100)));
+    searchUsers.mockImplementation((query: UserQuery) => of(page(twoUsers, 42, query.page, 100)));
 
     paginator().page.emit({ pageIndex: 0, pageSize: 200, length: 42, previousPageIndex: 0 });
     await fixture.whenStable();
@@ -140,7 +142,7 @@ describe('AdminUsers', () => {
   });
 
   it('keeps the last successfully loaded page on screen when a fetch fails', async () => {
-    getUsers.mockReturnValueOnce(throwError(() => new Error('boom')));
+    searchUsers.mockReturnValueOnce(throwError(() => new Error('boom')));
 
     paginator().page.emit({ pageIndex: 1, pageSize: 10, length: 42, previousPageIndex: 0 });
     await fixture.whenStable();
@@ -152,29 +154,29 @@ describe('AdminUsers', () => {
   });
 
   it('does not refetch endlessly when requests keep failing', async () => {
-    getUsers.mockReturnValue(throwError(() => new Error('down')));
-    getUsers.mockClear();
+    searchUsers.mockReturnValue(throwError(() => new Error('down')));
+    searchUsers.mockClear();
 
     paginator().page.emit({ pageIndex: 1, pageSize: 10, length: 42, previousPageIndex: 0 });
     await fixture.whenStable();
 
     // The failed target page plus a single re-sync of the last-good page, then it settles.
-    expect(getUsers.mock.calls.length).toBeLessThanOrEqual(2);
+    expect(searchUsers.mock.calls.length).toBeLessThanOrEqual(2);
   });
 
   it('reports the error and keeps paging working after a failed request', async () => {
-    getUsers.mockReturnValueOnce(throwError(() => new Error('boom')));
+    searchUsers.mockReturnValueOnce(throwError(() => new Error('boom')));
 
     paginator().page.emit({ pageIndex: 1, pageSize: 10, length: 42, previousPageIndex: 0 });
     await fixture.whenStable();
 
     expect(handleError).toHaveBeenCalled();
 
-    getUsers.mockClear();
+    searchUsers.mockClear();
     paginator().page.emit({ pageIndex: 2, pageSize: 10, length: 42, previousPageIndex: 1 });
     await fixture.whenStable();
 
-    expect(getUsers).toHaveBeenCalledWith(2, 10);
+    expect(searchUsers).toHaveBeenCalledWith(expect.objectContaining({ page: 2, size: 10 }));
   });
 
   it('hides the page-size select on compact viewports only', async () => {
@@ -191,7 +193,7 @@ describe('AdminUsers', () => {
   // Forces a fresh fetch with the given content by changing the page size (which re-runs the
   // request), so a test can render users other than the default pair.
   const reloadWith = async (content: AdminUser[]) => {
-    getUsers.mockReturnValue(of(page(content, content.length, 0, 20)));
+    searchUsers.mockReturnValue(of(page(content, content.length, 0, 20)));
     paginator().page.emit({ pageIndex: 0, pageSize: 20, length: 42, previousPageIndex: 0 });
     await fixture.whenStable();
   };
@@ -223,12 +225,12 @@ describe('AdminUsers', () => {
   it('re-fetches the current page after the edit sheet closes', async () => {
     isCompact.set(true);
     await fixture.whenStable();
-    getUsers.mockClear();
+    searchUsers.mockClear();
 
     fixture.nativeElement.querySelector('[data-test-id="userRow"]').click();
     await fixture.whenStable();
 
-    expect(getUsers).toHaveBeenCalled();
+    expect(searchUsers).toHaveBeenCalled();
   });
 
   it('disables only the signed-in admin’s own toggle in the expanded table', () => {
@@ -248,13 +250,13 @@ describe('AdminUsers', () => {
   });
 
   it('persists an inline toggle and re-fetches to reconcile', async () => {
-    getUsers.mockClear();
+    searchUsers.mockClear();
 
     toggleDebugElements()[1].triggerEventHandler('change', { checked: false });
     await fixture.whenStable();
 
     expect(setEnabled).toHaveBeenCalledWith(2, false);
-    expect(getUsers).toHaveBeenCalled();
+    expect(searchUsers).toHaveBeenCalled();
   });
 
   it('shows a dedicated notice and does not log a conflict, then reconciles', async () => {
@@ -263,13 +265,128 @@ describe('AdminUsers', () => {
         () => new HttpErrorResponse({ status: 409, error: { reason: 'lastActiveAdmin' } }),
       ),
     );
-    getUsers.mockClear();
+    searchUsers.mockClear();
 
     toggleDebugElements()[1].triggerEventHandler('change', { checked: false });
     await fixture.whenStable();
 
     expect(showNotice).toHaveBeenCalledWith('admin.userConflict.lastActiveAdmin');
     expect(handleError).not.toHaveBeenCalled();
-    expect(getUsers).toHaveBeenCalled(); // reload snaps the toggle back
+    expect(searchUsers).toHaveBeenCalled(); // reload snaps the toggle back
+  });
+
+  const searchInput = () =>
+    fixture.nativeElement.querySelector('[data-test-id="userSearch"]') as HTMLInputElement;
+
+  const type = async (value: string) => {
+    const input = searchInput();
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    // The term reaches the query only after the debounce settles, so wait past it before asserting.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await fixture.whenStable();
+  };
+
+  it('searches server-side on a new term and returns to the first page', async () => {
+    // Move off the first page, then start a search.
+    paginator().page.emit({ pageIndex: 2, pageSize: 10, length: 42, previousPageIndex: 0 });
+    await fixture.whenStable();
+    searchUsers.mockClear();
+
+    await type('ali');
+
+    expect(searchUsers).toHaveBeenCalledWith(expect.objectContaining({ search: 'ali', page: 0 }));
+  });
+
+  const sortHeaders = () =>
+    fixture.debugElement.queryAll(By.directive(MatSortHeader)).map((d) => d.nativeElement);
+
+  it('sorts by username server-side when the username header is clicked', async () => {
+    searchUsers.mockClear();
+
+    sortHeaders()[0].click(); // Benutzername
+    await fixture.whenStable();
+
+    expect(searchUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: 'username,asc', page: 0 }),
+    );
+  });
+
+  it('maps the Aktiv header to the enabled sort key', async () => {
+    searchUsers.mockClear();
+
+    sortHeaders()[2].click(); // Aktiv column, keyed to enabled
+    await fixture.whenStable();
+
+    expect(searchUsers).toHaveBeenCalledWith(expect.objectContaining({ sort: 'enabled,asc' }));
+  });
+
+  it('reflects a sheet-applied sort on the expanded table headers after a resize', async () => {
+    // Pick an ordering in the compact sheet, then widen to the (rebuilt) expanded table.
+    isCompact.set(true);
+    await fixture.whenStable();
+    fixture.nativeElement.querySelector('[data-test-id="sortButton"]').click();
+    (open.mock.calls[0][1].data as UserSortSheetData).applySort('email,desc');
+    isCompact.set(false);
+    await fixture.whenStable();
+
+    const matSort = fixture.debugElement.query(By.directive(MatSort)).injector.get(MatSort);
+    expect(matSort.active).toBe('email');
+    expect(matSort.direction).toBe('desc');
+  });
+
+  it('filters to admins when the Admins chip is selected and returns to the first page', async () => {
+    searchUsers.mockClear();
+
+    fixture.nativeElement.querySelector('[data-test-id="adminsChip"]').click();
+    await fixture.whenStable();
+
+    expect(searchUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ adminsOnly: true, page: 0 }),
+    );
+  });
+
+  it('opens the sort-and-filter sheet from the compact sort button with the current state', async () => {
+    isCompact.set(true);
+    await fixture.whenStable();
+
+    fixture.nativeElement.querySelector('[data-test-id="sortButton"]').click();
+
+    expect(open).toHaveBeenCalledWith(
+      UserSortSheet,
+      expect.objectContaining({
+        data: expect.objectContaining({ sort: undefined, adminsOnly: false }),
+      }),
+    );
+  });
+
+  it('applies an ordering chosen in the compact sheet and returns to the first page', async () => {
+    isCompact.set(true);
+    await fixture.whenStable();
+    fixture.nativeElement.querySelector('[data-test-id="sortButton"]').click();
+    const data = open.mock.calls[0][1].data as UserSortSheetData;
+    searchUsers.mockClear();
+
+    data.applySort('email,desc');
+    await fixture.whenStable();
+
+    expect(searchUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: 'email,desc', page: 0 }),
+    );
+  });
+
+  it('applies the admins filter toggled in the compact sheet', async () => {
+    isCompact.set(true);
+    await fixture.whenStable();
+    fixture.nativeElement.querySelector('[data-test-id="sortButton"]').click();
+    const data = open.mock.calls[0][1].data as UserSortSheetData;
+    searchUsers.mockClear();
+
+    data.setAdminsOnly(true);
+    await fixture.whenStable();
+
+    expect(searchUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ adminsOnly: true, page: 0 }),
+    );
   });
 });

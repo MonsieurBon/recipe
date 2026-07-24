@@ -4,7 +4,9 @@ import ch.ethy.recipes.security.TokenVersionService;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
+  // Columns a client may sort by, named exactly as the response fields. Only these reach the
+  // query; any other key falls back to the immutable id sort, so the sort parameter can never
+  // order by — and thereby leak the ordering of — a sensitive column such as password.
+  private static final Set<String> SORTABLE_COLUMNS = Set.of("username", "email", "enabled");
+  private static final Sort DEFAULT_SORT = Sort.by("id");
+
   private final TokenVersionService tokenVersionService;
   private final UserRepository userRepository;
 
@@ -26,11 +34,47 @@ public class UserService {
     return userRepository.findAll().stream().map(UserService::toDto).toList();
   }
 
-  public Page<UserDto> getUsers(Pageable pageable) {
-    // A stable, immutable sort key keeps page boundaries consistent across requests and prevents a
-    // caller from ordering by a sensitive column via the sort parameter.
-    Pageable byId = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("id"));
-    return userRepository.findAll(byId).map(UserService::toDto);
+  /**
+   * Lists users for the admin overview, optionally narrowed by a free-text term and an admins-only
+   * filter, and ordered by an allow-listed sort key. The requested sort is reduced to known-safe
+   * columns before it reaches the query, so it can never become an ordering oracle over a sensitive
+   * column; an empty or unknown sort defaults to the immutable id, keeping page boundaries stable.
+   *
+   * @param pageable the requested page, size and sort (sort keys are allow-listed)
+   * @param query a free-text term matched against username and email, or blank for no filter
+   * @param adminsOnly when true, restrict the result to accounts holding the admin role
+   */
+  public Page<UserDto> searchUsers(Pageable pageable, String query, boolean adminsOnly) {
+    Pageable safe =
+        PageRequest.of(
+            pageable.getPageNumber(), pageable.getPageSize(), safeSort(pageable.getSort()));
+    return userRepository.search(searchPattern(query), adminsOnly, safe).map(UserService::toDto);
+  }
+
+  private static Sort safeSort(Sort requested) {
+    List<Sort.Order> allowed =
+        requested.stream().filter(order -> SORTABLE_COLUMNS.contains(order.getProperty())).toList();
+    // Append the immutable id as a final tiebreaker. A non-unique key such as enabled leaves rows
+    // with equal values in an undefined order under LIMIT/OFFSET, which could repeat or skip a row
+    // while paging; the id makes every ordering total, so pages stay consistent.
+    return allowed.isEmpty() ? DEFAULT_SORT : Sort.by(allowed).and(DEFAULT_SORT);
+  }
+
+  private static String searchPattern(String query) {
+    if (query == null || query.isBlank()) {
+      return null;
+    }
+    // Escape the LIKE metacharacters so a literal % or _ in the term matches itself rather than
+    // acting as a wildcard; the query pairs this with ESCAPE '\'. Backslash first, so the escapes
+    // added for % and _ are not themselves re-escaped.
+    String escaped =
+        query
+            .strip()
+            .toLowerCase(Locale.ROOT)
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_");
+    return "%" + escaped + "%";
   }
 
   public Optional<UserDto> findUser(long id) {

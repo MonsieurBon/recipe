@@ -1,4 +1,32 @@
+<ng-template #searchField>
+  <mat-form-field class="search" appearance="outline" subscriptSizing="dynamic">
+    <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+    <input
+      matInput
+      #searchInput
+      data-test-id="userSearch"
+      [value]="search()"
+      (input)="onSearch(searchInput.value)"
+      [placeholder]="'admin.search.placeholder' | translate"
+      [attr.aria-label]="'admin.search.label' | translate"
+    />
+  </mat-form-field>
+</ng-template>
+
 @if (isCompact()) {
+  <div class="search-row">
+    <ng-container [ngTemplateOutlet]="searchField"></ng-container>
+    <button
+      mat-icon-button
+      type="button"
+      data-test-id="sortButton"
+      [attr.aria-label]="'admin.sort.button' | translate"
+      (click)="openSortSheet()"
+    >
+      <mat-icon aria-hidden="true">sort</mat-icon>
+    </button>
+  </div>
+
   <ul class="user-rows" data-test-id="userRows">
     @for (user of users(); track user.id) {
       <li>
@@ -27,17 +55,43 @@
     }
   </ul>
 } @else {
-  <table mat-table [dataSource]="users()">
+  <div class="search-row">
+    <ng-container [ngTemplateOutlet]="searchField"></ng-container>
+    <button
+      mat-button
+      type="button"
+      class="chip"
+      data-test-id="adminsChip"
+      [class.on]="adminsOnly()"
+      [attr.aria-pressed]="adminsOnly()"
+      (click)="toggleAdmins()"
+    >
+      {{ 'admin.filterAdmins' | translate }}
+    </button>
+  </div>
+
+  <table
+    mat-table
+    matSort
+    [matSortActive]="sortActive()"
+    [matSortDirection]="sortDirection()"
+    (matSortChange)="onSortChange($event)"
+    [dataSource]="users()"
+  >
     <ng-container matColumnDef="username">
-      <th mat-header-cell *matHeaderCellDef>{{ 'field.username' | translate }}</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'field.username' | translate }}</th>
       <td mat-cell *matCellDef="let user">{{ user.username }}</td>
     </ng-container>
     <ng-container matColumnDef="email">
-      <th mat-header-cell *matHeaderCellDef>{{ 'admin.emailColumn' | translate }}</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        {{ 'admin.emailColumn' | translate }}
+      </th>
       <td mat-cell *matCellDef="let user" class="cell-mail">{{ user.email }}</td>
     </ng-container>
     <ng-container matColumnDef="active">
-      <th mat-header-cell *matHeaderCellDef>{{ 'admin.activeColumn' | translate }}</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="enabled">
+        {{ 'admin.activeColumn' | translate }}
+      </th>
       <td mat-cell *matCellDef="let user">
         <mat-slide-toggle
           data-test-id="activeToggle"

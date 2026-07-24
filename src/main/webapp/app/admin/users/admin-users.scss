@@ -2,6 +2,32 @@
   display: block;
 }
 
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+
+  // Fills the row on compact (next to the sort button); on wider viewports it caps so the search
+  // sits left with the Admins chip beside it rather than stretching the whole width.
+  .search {
+    flex: 1;
+    max-width: 24rem;
+  }
+}
+
+// The Admins filter reads as a chip: outlined when off, filled while it narrows the list.
+.chip {
+  flex-shrink: 0;
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  &.on {
+    background: var(--mat-sys-secondary-container);
+    color: var(--mat-sys-on-secondary-container);
+    border-color: transparent;
+  }
+}
+
 .user-rows {
   margin: 0;
   padding: 0;

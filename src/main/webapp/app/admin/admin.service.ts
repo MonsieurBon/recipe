@@ -22,14 +22,43 @@ interface PagedResponse {
   page: { size: number; number: number; totalElements: number; totalPages: number };
 }
 
+/** The columns the admin user list may be ordered by, named as the response fields. */
+export type UserSortColumn = 'username' | 'email' | 'enabled';
+export type UserSortDirection = 'asc' | 'desc';
+
+/** A sort in Spring Data's `property,direction` form, or undefined for the server default. */
+export type UserSort = undefined | `${UserSortColumn},${UserSortDirection}`;
+
+/**
+ * A page request for the admin user list. Beyond paging it carries the optional free-text term, the
+ * sort, and the admins-only filter; each is sent as a query param only when it actually narrows the
+ * result.
+ */
+export interface UserQuery {
+  page: number;
+  size: number;
+  search?: string;
+  sort?: UserSort;
+  adminsOnly?: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AdminService {
   private http = inject(HttpClient);
 
-  getUsers(page: number, size: number): Observable<UserPage> {
-    const params = new HttpParams().set('page', page).set('size', size);
+  searchUsers(query: UserQuery): Observable<UserPage> {
+    let params = new HttpParams().set('page', query.page).set('size', query.size);
+    if (query.search) {
+      params = params.set('q', query.search);
+    }
+    if (query.sort) {
+      params = params.set('sort', query.sort);
+    }
+    if (query.adminsOnly) {
+      params = params.set('admins', true);
+    }
     return this.http.get<PagedResponse>('/api/admin/users', { params }).pipe(
       map((response) => ({
         content: response.content,

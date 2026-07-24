@@ -1,0 +1,37 @@
+<button
+  type="button"
+  class="handle"
+  data-test-id="sheetHandle"
+  [attr.aria-label]="'common.close' | translate"
+  (click)="close()"
+></button>
+
+<p class="stitle">{{ 'admin.sort.title' | translate }}</p>
+@for (option of options; track option.sort) {
+  <button
+    type="button"
+    class="srow"
+    data-test-id="sortOption"
+    [class.sel]="isSelected(option.sort)"
+    (click)="choose(option.sort)"
+  >
+    <span class="ck">
+      @if (isSelected(option.sort)) {
+        <mat-icon aria-hidden="true">check</mat-icon>
+      }
+    </span>
+    <span>{{ option.labelKey | translate }}</span>
+  </button>
+}
+
+<p class="stitle">{{ 'admin.sort.filterTitle' | translate }}</p>
+<div class="srow filter-row">
+  <span class="ck" aria-hidden="true"></span>
+  <span class="filter-label">{{ 'admin.sort.adminsOnly' | translate }}</span>
+  <mat-slide-toggle
+    data-test-id="adminsToggle"
+    [aria-label]="'admin.sort.adminsOnly' | translate"
+    [checked]="adminsOnly()"
+    (change)="toggleAdmins($event)"
+  ></mat-slide-toggle>
+</div>

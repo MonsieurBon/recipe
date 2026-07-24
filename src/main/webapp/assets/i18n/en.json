@@ -64,6 +64,23 @@
     "activeLabel": "Active",
     "activeToggleAria": "Active for {{username}}",
     "disabledTag": "Disabled",
+    "filterAdmins": "Admins",
+    "search": {
+      "placeholder": "Search users",
+      "label": "Search users"
+    },
+    "sort": {
+      "button": "Sort and filter",
+      "title": "Sort",
+      "filterTitle": "Filter",
+      "adminsOnly": "Admins only",
+      "usernameAsc": "Username (A–Z)",
+      "usernameDesc": "Username (Z–A)",
+      "emailAsc": "Email (A–Z)",
+      "emailDesc": "Email (Z–A)",
+      "activeFirst": "Active first",
+      "disabledFirst": "Disabled first"
+    },
     "userConflict": {
       "selfDeactivation": "You can't deactivate your own account.",
       "lastActiveAdmin": "At least one active admin must remain."
