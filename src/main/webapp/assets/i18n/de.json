@@ -64,6 +64,23 @@
     "activeLabel": "Aktiv",
     "activeToggleAria": "Aktiv für {{username}}",
     "disabledTag": "Deaktiviert",
+    "filterAdmins": "Admins",
+    "search": {
+      "placeholder": "Benutzer durchsuchen",
+      "label": "Benutzer durchsuchen"
+    },
+    "sort": {
+      "button": "Sortieren und filtern",
+      "title": "Sortieren",
+      "filterTitle": "Filter",
+      "adminsOnly": "Nur Admins",
+      "usernameAsc": "Benutzername (A–Z)",
+      "usernameDesc": "Benutzername (Z–A)",
+      "emailAsc": "E-Mail (A–Z)",
+      "emailDesc": "E-Mail (Z–A)",
+      "activeFirst": "Aktive zuerst",
+      "disabledFirst": "Deaktivierte zuerst"
+    },
     "userConflict": {
       "selfDeactivation": "Du kannst dein eigenes Konto nicht deaktivieren.",
       "lastActiveAdmin": "Es muss mindestens ein aktiver Admin bleiben."

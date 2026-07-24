@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +33,11 @@ public class AdminUserController {
   }
 
   @GetMapping
-  public PagedModel<UserDto> getUsers(@PageableDefault(size = 10) Pageable pageable) {
-    return new PagedModel<>(userService.getUsers(pageable));
+  public PagedModel<UserDto> searchUsers(
+      @PageableDefault(size = 10) Pageable pageable,
+      @RequestParam(name = "q", required = false) String query,
+      @RequestParam(name = "admins", defaultValue = "false") boolean adminsOnly) {
+    return new PagedModel<>(userService.searchUsers(pageable, query, adminsOnly));
   }
 
   /**

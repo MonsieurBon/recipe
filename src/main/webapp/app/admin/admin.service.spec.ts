@@ -20,8 +20,8 @@ describe('AdminService', () => {
 
   afterEach(() => httpMock.verify());
 
-  it('getUsers requests the given page and maps content plus total count', async () => {
-    const promise = firstValueFrom(service.getUsers(1, 20));
+  it('searchUsers requests the given page and maps content plus total count', async () => {
+    const promise = firstValueFrom(service.searchUsers({ page: 1, size: 20 }));
 
     const req = httpMock.expectOne('/api/admin/users?page=1&size=20');
     expect(req.request.method).toBe('GET');
@@ -53,6 +53,32 @@ describe('AdminService', () => {
       },
       { id: 2, username: 'bob', email: 'bob@example.com', enabled: false, roles: ['USER'] },
     ]);
+  });
+
+  it('searchUsers adds q, sort and admins query params when filters are given', async () => {
+    firstValueFrom(
+      service.searchUsers({
+        page: 0,
+        size: 10,
+        search: 'ali',
+        sort: 'username,asc',
+        adminsOnly: true,
+      }),
+    );
+
+    const req = httpMock.expectOne(
+      '/api/admin/users?page=0&size=10&q=ali&sort=username,asc&admins=true',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({ content: [], page: { size: 10, number: 0, totalElements: 0, totalPages: 0 } });
+  });
+
+  it('searchUsers omits filter params that are absent, empty or false', async () => {
+    firstValueFrom(service.searchUsers({ page: 0, size: 10, search: '', adminsOnly: false }));
+
+    const req = httpMock.expectOne('/api/admin/users?page=0&size=10');
+    expect(req.request.method).toBe('GET');
+    req.flush({ content: [], page: { size: 10, number: 0, totalElements: 0, totalPages: 0 } });
   });
 
   it('setEnabled PUTs the flag and returns the updated user', async () => {

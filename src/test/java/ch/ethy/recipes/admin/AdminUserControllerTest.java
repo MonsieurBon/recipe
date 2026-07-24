@@ -2,6 +2,7 @@ package ch.ethy.recipes.admin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -64,7 +65,7 @@ class AdminUserControllerTest {
   @Test
   void listsUsersAsAPageWithTotalCount() throws Exception {
     Pageable pageable = PageRequest.of(0, 20);
-    when(userService.getUsers(any()))
+    when(userService.searchUsers(any(), any(), anyBoolean()))
         .thenReturn(
             new PageImpl<>(
                 List.of(
@@ -94,28 +95,58 @@ class AdminUserControllerTest {
 
   @Test
   void defaultsToTenUsersPerPageWhenNoSizeIsGiven() throws Exception {
-    when(userService.getUsers(any()))
+    when(userService.searchUsers(any(), any(), anyBoolean()))
         .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
     ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
 
     mockMvc.perform(get("/api/admin/users")).andExpect(status().isOk());
 
-    verify(userService).getUsers(pageable.capture());
+    verify(userService).searchUsers(pageable.capture(), any(), anyBoolean());
     assertEquals(10, pageable.getValue().getPageSize());
   }
 
   @Test
   void capsRequestedPageSizeAtTheConfiguredMaximum() throws Exception {
-    when(userService.getUsers(any()))
+    when(userService.searchUsers(any(), any(), anyBoolean()))
         .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 100), 0));
     ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
 
     mockMvc.perform(get("/api/admin/users").param("size", "100")).andExpect(status().isOk());
     mockMvc.perform(get("/api/admin/users").param("size", "101")).andExpect(status().isOk());
 
-    verify(userService, times(2)).getUsers(pageable.capture());
+    verify(userService, times(2)).searchUsers(pageable.capture(), any(), anyBoolean());
     assertEquals(100, pageable.getAllValues().get(0).getPageSize());
     assertEquals(100, pageable.getAllValues().get(1).getPageSize());
+  }
+
+  @Test
+  void forwardsTheSearchTermAndAdminsFilterToTheService() throws Exception {
+    when(userService.searchUsers(any(), any(), anyBoolean()))
+        .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
+    ArgumentCaptor<String> query = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<Boolean> adminsOnly = ArgumentCaptor.forClass(Boolean.class);
+
+    mockMvc
+        .perform(get("/api/admin/users").param("q", "ali").param("admins", "true"))
+        .andExpect(status().isOk());
+
+    verify(userService).searchUsers(any(), query.capture(), adminsOnly.capture());
+    assertEquals("ali", query.getValue());
+    assertEquals(true, adminsOnly.getValue());
+  }
+
+  @Test
+  void defaultsToNoSearchTermAndAllUsersWhenNoFilterIsGiven() throws Exception {
+    when(userService.searchUsers(any(), any(), anyBoolean()))
+        .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
+    ArgumentCaptor<String> query = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<Boolean> adminsOnly = ArgumentCaptor.forClass(Boolean.class);
+
+    mockMvc.perform(get("/api/admin/users")).andExpect(status().isOk());
+
+    verify(userService).searchUsers(any(), query.capture(), adminsOnly.capture());
+    assertEquals(null, query.getValue());
+    assertEquals(false, adminsOnly.getValue());
   }
 
   private static Authentication authenticatedAs(long userId) {

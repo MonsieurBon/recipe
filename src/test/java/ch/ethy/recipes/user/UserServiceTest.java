@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -75,23 +76,98 @@ class UserServiceTest {
     assertEquals("fr", dto.preferredLanguage());
   }
 
+  private ArgumentCaptor<Pageable> stubSearch(User... users) {
+    ArgumentCaptor<Pageable> applied = ArgumentCaptor.forClass(Pageable.class);
+    when(userRepository.search(any(), anyBoolean(), applied.capture()))
+        .thenReturn(new PageImpl<>(List.of(users), PageRequest.of(1, 10), 25));
+    return applied;
+  }
+
   @Test
-  void getUsersSortsByIdAndPreservesPagingMetadata() {
+  void searchUsersDefaultsToAStableIdSortAndPreservesPagingMetadata() {
     User user = new User();
     user.setUsername("alice");
     user.setEmail("alice@example.com");
-    ArgumentCaptor<Pageable> applied = ArgumentCaptor.forClass(Pageable.class);
-    when(userRepository.findAll(any(Pageable.class)))
-        .thenReturn(new PageImpl<>(List.of(user), PageRequest.of(1, 10), 25));
+    ArgumentCaptor<Pageable> applied = stubSearch(user);
 
-    Page<UserDto> page = userService.getUsers(PageRequest.of(1, 10));
+    Page<UserDto> page = userService.searchUsers(PageRequest.of(1, 10), null, false);
 
-    verify(userRepository).findAll(applied.capture());
     assertEquals(Sort.by("id"), applied.getValue().getSort());
     assertEquals(1, applied.getValue().getPageNumber());
     assertEquals(10, applied.getValue().getPageSize());
     assertEquals(25, page.getTotalElements());
     assertEquals(List.of("alice"), page.getContent().stream().map(UserDto::username).toList());
+  }
+
+  @Test
+  void searchUsersKeepsAnAllowedSortKeyAndAppendsIdAsATiebreaker() {
+    ArgumentCaptor<Pageable> applied = stubSearch();
+
+    userService.searchUsers(PageRequest.of(0, 10, Sort.by(Sort.Order.desc("email"))), null, false);
+    assertEquals(
+        Sort.by(Sort.Order.desc("email")).and(Sort.by("id")), applied.getValue().getSort());
+
+    userService.searchUsers(
+        PageRequest.of(0, 10, Sort.by(Sort.Order.asc("username"))), null, false);
+    assertEquals(
+        Sort.by(Sort.Order.asc("username")).and(Sort.by("id")), applied.getValue().getSort());
+
+    userService.searchUsers(PageRequest.of(0, 10, Sort.by(Sort.Order.asc("enabled"))), null, false);
+    assertEquals(
+        Sort.by(Sort.Order.asc("enabled")).and(Sort.by("id")), applied.getValue().getSort());
+  }
+
+  @Test
+  void searchUsersFallsBackToIdForADisallowedSortKey() {
+    ArgumentCaptor<Pageable> applied = stubSearch();
+
+    userService.searchUsers(PageRequest.of(0, 10, Sort.by("password")), null, false);
+
+    assertEquals(Sort.by("id"), applied.getValue().getSort());
+  }
+
+  @Test
+  void searchUsersNormalizesABlankSearchTermToNoFilter() {
+    ArgumentCaptor<String> query = ArgumentCaptor.forClass(String.class);
+    when(userRepository.search(query.capture(), anyBoolean(), any()))
+        .thenReturn(new PageImpl<>(List.of()));
+
+    userService.searchUsers(PageRequest.of(0, 10), "   ", false);
+
+    assertEquals(null, query.getValue());
+  }
+
+  @Test
+  void searchUsersWrapsTheSearchTermInCaseInsensitiveWildcards() {
+    ArgumentCaptor<String> query = ArgumentCaptor.forClass(String.class);
+    when(userRepository.search(query.capture(), anyBoolean(), any()))
+        .thenReturn(new PageImpl<>(List.of()));
+
+    userService.searchUsers(PageRequest.of(0, 10), " Ali ", false);
+
+    assertEquals("%ali%", query.getValue());
+  }
+
+  @Test
+  void searchUsersEscapesLikeWildcardsSoTheyMatchLiterally() {
+    ArgumentCaptor<String> query = ArgumentCaptor.forClass(String.class);
+    when(userRepository.search(query.capture(), anyBoolean(), any()))
+        .thenReturn(new PageImpl<>(List.of()));
+
+    userService.searchUsers(PageRequest.of(0, 10), "a_b%c\\d", false);
+
+    assertEquals("%a\\_b\\%c\\\\d%", query.getValue());
+  }
+
+  @Test
+  void searchUsersPassesTheAdminsOnlyFilterThrough() {
+    ArgumentCaptor<Boolean> adminsOnly = ArgumentCaptor.forClass(Boolean.class);
+    when(userRepository.search(any(), adminsOnly.capture(), any()))
+        .thenReturn(new PageImpl<>(List.of()));
+
+    userService.searchUsers(PageRequest.of(0, 10), null, true);
+
+    assertEquals(true, adminsOnly.getValue());
   }
 
   @Test

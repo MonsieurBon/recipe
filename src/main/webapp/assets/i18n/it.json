@@ -64,6 +64,23 @@
     "activeLabel": "Attivo",
     "activeToggleAria": "Attivo per {{username}}",
     "disabledTag": "Disattivato",
+    "filterAdmins": "Admin",
+    "search": {
+      "placeholder": "Cerca utenti",
+      "label": "Cerca utenti"
+    },
+    "sort": {
+      "button": "Ordina e filtra",
+      "title": "Ordina",
+      "filterTitle": "Filtro",
+      "adminsOnly": "Solo admin",
+      "usernameAsc": "Nome utente (A–Z)",
+      "usernameDesc": "Nome utente (Z–A)",
+      "emailAsc": "E-mail (A–Z)",
+      "emailDesc": "E-mail (Z–A)",
+      "activeFirst": "Prima gli attivi",
+      "disabledFirst": "Prima i disattivati"
+    },
     "userConflict": {
       "selfDeactivation": "Non puoi disattivare il tuo account.",
       "lastActiveAdmin": "Deve restare almeno un amministratore attivo."

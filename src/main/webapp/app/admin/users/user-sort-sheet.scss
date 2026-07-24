@@ -1,0 +1,74 @@
+:host {
+  display: block;
+  padding-bottom: 0.5rem;
+}
+
+.handle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0.6rem 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    width: 34px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--mat-sys-outline-variant);
+  }
+}
+
+.stitle {
+  margin: 0.4rem 0 0.15rem;
+  padding: 0 1.5rem;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-title-small);
+}
+
+.srow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.7rem 1.5rem;
+  border: none;
+  background: none;
+  color: inherit;
+  font: var(--mat-sys-body-large);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--mat-sys-surface-container-high);
+  }
+
+  &.sel {
+    color: var(--mat-sys-primary);
+  }
+}
+
+// Fixed-width slot so labels align whether or not the row carries the selected checkmark.
+.ck {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.filter-row {
+  cursor: default;
+
+  &:hover {
+    background: none;
+  }
+
+  // Fill the space between label and toggle so the toggle sits at the row's trailing edge.
+  .filter-label {
+    flex: 1;
+  }
+}
