@@ -4,6 +4,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatSlideToggle, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { TranslatePipe } from '@ngx-translate/core';
 
+import { BottomSheet } from '../../utility/bottom-sheet';
 import { UserSort } from '../admin.service';
 
 /** Data handed to the compact sort-and-filter sheet. */
@@ -31,7 +32,7 @@ const SORT_OPTIONS: readonly { readonly labelKey: string; readonly sort: UserSor
  */
 @Component({
   selector: 'app-user-sort-sheet',
-  imports: [MatIcon, MatSlideToggle, TranslatePipe],
+  imports: [BottomSheet, MatIcon, MatSlideToggle, TranslatePipe],
   templateUrl: './user-sort-sheet.html',
   styleUrl: './user-sort-sheet.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,10 +46,6 @@ export class UserSortSheet {
 
   protected isSelected(sort: UserSort): boolean {
     return this.data.sort === sort;
-  }
-
-  protected close(): void {
-    this.sheetRef.dismiss();
   }
 
   protected choose(sort: UserSort): void {

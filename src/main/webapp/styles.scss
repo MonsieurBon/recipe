@@ -64,6 +64,20 @@ h2 {
   }
 }
 
+// Slide-toggles used as full-width settings rows (label at the leading edge, switch trailing), as
+// in the admin bottom sheets. The internal form field is reached from global styles because a
+// component's own styles cannot pierce Material's view encapsulation; each row sets the host width.
+// `labelPosition="before"` adds a `margin-left: auto` on the label that would bunch it against the
+// switch; clearing it lets `space-between` pull the label to the leading edge.
+.row-toggle .mdc-form-field {
+  width: 100%;
+  justify-content: space-between;
+
+  .mdc-label {
+    margin-left: 0;
+  }
+}
+
 // The language bottom sheet: the design's card surface and a rounded top edge, in place of the
 // flat, darker default. Only this one bottom sheet exists, so the container is styled directly.
 .mat-bottom-sheet-container {
