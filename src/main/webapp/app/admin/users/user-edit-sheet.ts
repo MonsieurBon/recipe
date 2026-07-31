@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { MatSlideToggle, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { TranslatePipe } from '@ngx-translate/core';
 import { catchError, EMPTY } from 'rxjs';
 
+import { BottomSheet } from '../../utility/bottom-sheet';
 import { NotificationService } from '../../utility/notification.service';
 import { AdminService, AdminUser } from '../admin.service';
 import { conflictNoticeKey } from './user-conflict';
@@ -21,7 +22,7 @@ export interface UserEditSheetData {
  */
 @Component({
   selector: 'app-user-edit-sheet',
-  imports: [MatSlideToggle, TranslatePipe],
+  imports: [BottomSheet, MatSlideToggle, TranslatePipe],
   templateUrl: './user-edit-sheet.html',
   styleUrl: './user-edit-sheet.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,7 +30,6 @@ export interface UserEditSheetData {
 export class UserEditSheet {
   private readonly adminService = inject(AdminService);
   private readonly notification = inject(NotificationService);
-  private readonly sheetRef = inject(MatBottomSheetRef);
   protected readonly data = inject<UserEditSheetData>(MAT_BOTTOM_SHEET_DATA);
 
   protected readonly enabled = signal(this.data.user.enabled);
@@ -53,9 +53,5 @@ export class UserEditSheet {
         }),
       )
       .subscribe((updated) => this.enabled.set(updated.enabled));
-  }
-
-  close(): void {
-    this.sheetRef.dismiss();
   }
 }

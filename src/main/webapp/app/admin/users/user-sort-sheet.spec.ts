@@ -79,12 +79,4 @@ describe('UserSortSheet', () => {
       .componentInstance as MatSlideToggle;
     expect(toggle.checked).toBe(true);
   });
-
-  it('dismisses when the handle is tapped', async () => {
-    await setup();
-
-    fixture.nativeElement.querySelector('[data-test-id="sheetHandle"]').click();
-
-    expect(dismiss).toHaveBeenCalled();
-  });
 });

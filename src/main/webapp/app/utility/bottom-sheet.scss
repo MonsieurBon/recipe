@@ -1,0 +1,25 @@
+:host {
+  display: block;
+  padding-bottom: 0.5rem;
+}
+
+// A full-width, thin tap target that dismisses the sheet; the visible pill is drawn centered inside
+// it so the affordance stays small while the hit area is comfortable.
+.handle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0.6rem 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    width: 34px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--mat-sys-outline-variant);
+  }
+}
