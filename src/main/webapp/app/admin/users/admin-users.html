@@ -102,14 +102,21 @@
         ></mat-slide-toggle>
       </td>
     </ng-container>
-    <ng-container matColumnDef="roles">
-      <th mat-header-cell *matHeaderCellDef>{{ 'admin.rolesColumn' | translate }}</th>
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef>{{ 'admin.roleColumn' | translate }}</th>
       <td mat-cell *matCellDef="let user">
-        <span class="tags">
-          @for (role of user.roles; track role) {
-            <span class="tag" [class.amber]="role === 'ADMIN'">{{ role | titlecase }}</span>
-          }
-        </span>
+        <mat-form-field class="role-field" subscriptSizing="dynamic">
+          <mat-select
+            data-test-id="roleSelect"
+            [aria-label]="'admin.roleSelectAria' | translate: { username: user.username }"
+            [value]="roleOf(user)"
+            [disabled]="isOwn(user)"
+            (selectionChange)="onRoleChange(user, $event)"
+          >
+            <mat-option value="USER">{{ 'admin.role.user' | translate }}</mat-option>
+            <mat-option value="ADMIN">{{ 'admin.role.admin' | translate }}</mat-option>
+          </mat-select>
+        </mat-form-field>
       </td>
     </ng-container>
     <tr mat-header-row *matHeaderRowDef="columns"></tr>

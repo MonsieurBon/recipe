@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatSelect } from '@angular/material/select';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { of, throwError } from 'rxjs';
@@ -13,7 +14,7 @@ import { AuthService, CurrentUser } from '../../security/auth.service';
 import { LayoutService } from '../../utility/layout.service';
 import { NotificationService } from '../../utility/notification.service';
 import { provideTranslateTesting } from '../../testing/provide-translate-testing';
-import { AdminService, AdminUser, UserPage, UserQuery } from '../admin.service';
+import { AdminService, AdminUser, UserPage, UserQuery, UserUpdate } from '../admin.service';
 import { AdminUsers } from './admin-users';
 import { UserEditSheet } from './user-edit-sheet';
 import { UserSortSheet, UserSortSheetData } from './user-sort-sheet';
@@ -23,7 +24,7 @@ describe('AdminUsers', () => {
   let isCompact: WritableSignal<boolean>;
   let currentUser: WritableSignal<CurrentUser | null>;
   let searchUsers: Mock<(query: UserQuery) => ReturnType<AdminService['searchUsers']>>;
-  let setEnabled: Mock<(id: number, enabled: boolean) => ReturnType<AdminService['setEnabled']>>;
+  let updateUser: Mock<(id: number, changes: UserUpdate) => ReturnType<AdminService['updateUser']>>;
   let open: Mock;
   let showNotice: Mock<(key: string) => void>;
   let handleError: Mock<(error: unknown) => void>;
@@ -52,8 +53,14 @@ describe('AdminUsers', () => {
     handleError = vi.fn();
     // The server echoes back the page it actually served, so the mock mirrors the request.
     searchUsers = vi.fn((query: UserQuery) => of(page(twoUsers, 42, query.page, query.size)));
-    setEnabled = vi.fn((id: number, enabled: boolean) =>
-      of({ id, username: 'x', email: 'x@example.com', enabled, roles: ['USER'] }),
+    updateUser = vi.fn((id: number, changes: UserUpdate) =>
+      of({
+        id,
+        username: 'x',
+        email: 'x@example.com',
+        enabled: changes.enabled,
+        roles: changes.role === 'ADMIN' ? ['USER', 'ADMIN'] : ['USER'],
+      }),
     );
     open = vi.fn(() => ({ afterDismissed: () => of(undefined) }));
     showNotice = vi.fn();
@@ -62,7 +69,7 @@ describe('AdminUsers', () => {
       imports: [AdminUsers],
       providers: [
         provideTranslateTesting(),
-        { provide: AdminService, useValue: { searchUsers, setEnabled } },
+        { provide: AdminService, useValue: { searchUsers, updateUser } },
         { provide: LayoutService, useValue: { isCompact } },
         { provide: AuthService, useValue: { currentUser } },
         { provide: MatBottomSheet, useValue: { open } },
@@ -80,15 +87,17 @@ describe('AdminUsers', () => {
 
   const paginator = () => fixture.debugElement.query(By.directive(MatPaginator)).componentInstance;
 
-  it('renders one table row per user with username, email and role tags on larger viewports', () => {
+  it('renders one table row per user with username, email and an editable role on larger viewports', () => {
     const rows: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('tr[mat-row]');
     expect(rows.length).toBe(2);
     expect(rows[0].textContent).toContain('alice');
     expect(rows[0].textContent).toContain('alice@example.com');
-    expect(tags(rows[0])).toEqual(['User', 'Admin']);
     expect(rows[1].textContent).toContain('bob');
     expect(rows[1].textContent).toContain('bob@example.com');
-    expect(tags(rows[1])).toEqual(['User']);
+
+    // On the expanded table the role is edited inline, so it is a select rather than a static tag.
+    expect(rows[0].querySelector('[data-test-id="roleSelect"]')).not.toBeNull();
+    expect(tags(rows[0])).toEqual([]);
 
     expect(fixture.nativeElement.querySelector('[data-test-id="userRows"]')).toBeNull();
   });
@@ -189,6 +198,7 @@ describe('AdminUsers', () => {
   });
 
   const toggleDebugElements = () => fixture.debugElement.queryAll(By.directive(MatSlideToggle));
+  const roleSelectDebugElements = () => fixture.debugElement.queryAll(By.directive(MatSelect));
 
   // Forces a fresh fetch with the given content by changing the page size (which re-runs the
   // request), so a test can render users other than the default pair.
@@ -255,12 +265,38 @@ describe('AdminUsers', () => {
     toggleDebugElements()[1].triggerEventHandler('change', { checked: false });
     await fixture.whenStable();
 
-    expect(setEnabled).toHaveBeenCalledWith(2, false);
+    // bob holds only USER, and the toggle must carry that role along untouched.
+    expect(updateUser).toHaveBeenCalledWith(2, { enabled: false, role: 'USER' });
     expect(searchUsers).toHaveBeenCalled();
   });
 
+  it('persists an inline role change, keeping the account’s enabled state', async () => {
+    searchUsers.mockClear();
+
+    roleSelectDebugElements()[1].triggerEventHandler('selectionChange', { value: 'ADMIN' });
+    await fixture.whenStable();
+
+    expect(updateUser).toHaveBeenCalledWith(2, { enabled: true, role: 'ADMIN' });
+    expect(searchUsers).toHaveBeenCalled();
+  });
+
+  it('shows each account’s current role in the inline select', () => {
+    const selects = roleSelectDebugElements();
+
+    expect((selects[0].componentInstance as MatSelect).value).toBe('ADMIN');
+    expect((selects[1].componentInstance as MatSelect).value).toBe('USER');
+  });
+
+  it('disables the role select on the signed-in admin’s own row', () => {
+    currentUser.set({ id: 1, username: 'alice', email: 'alice@example.com' });
+    fixture.detectChanges();
+
+    expect((roleSelectDebugElements()[0].componentInstance as MatSelect).disabled).toBe(true);
+    expect((roleSelectDebugElements()[1].componentInstance as MatSelect).disabled).toBe(false);
+  });
+
   it('shows a dedicated notice and does not log a conflict, then reconciles', async () => {
-    setEnabled.mockReturnValue(
+    updateUser.mockReturnValue(
       throwError(
         () => new HttpErrorResponse({ status: 409, error: { reason: 'lastActiveAdmin' } }),
       ),

@@ -115,8 +115,9 @@ table {
     color: var(--mat-sys-on-surface-variant);
   }
 
-  .tags {
-    display: inline-flex;
-    gap: 0.35rem;
+  // The role is edited in place, so its field stays narrow enough to sit inside the cell without
+  // stretching the row to a form control's usual height.
+  .role-field {
+    width: 9rem;
   }
 }

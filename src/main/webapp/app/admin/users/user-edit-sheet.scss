@@ -41,4 +41,9 @@
   .row-toggle {
     width: 100%;
   }
+
+  // The select spans the row like the toggle above it, so both controls share one edge.
+  .role-field {
+    width: 100%;
+  }
 }

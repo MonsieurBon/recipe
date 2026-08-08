@@ -13,9 +13,11 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatFormField, MatPrefix } from '@angular/material/form-field';
+import { MatOption } from '@angular/material/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSelect, MatSelectChange } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatSort, MatSortHeader, Sort, SortDirection } from '@angular/material/sort';
 import {
@@ -44,7 +46,15 @@ import {
 import { AuthService } from '../../security/auth.service';
 import { LayoutService } from '../../utility/layout.service';
 import { NotificationService } from '../../utility/notification.service';
-import { AdminService, AdminUser, UserPage, UserSort } from '../admin.service';
+import {
+  AdminService,
+  AdminUser,
+  roleOf,
+  UserPage,
+  UserRole,
+  UserSort,
+  UserUpdate,
+} from '../admin.service';
 import { conflictNoticeKey } from './user-conflict';
 import { UserEditSheet } from './user-edit-sheet';
 import { UserSortSheet, UserSortSheetData } from './user-sort-sheet';
@@ -72,8 +82,10 @@ const SEARCH_DEBOUNCE_MS = 250;
     MatInput,
     MatPaginator,
     MatPrefix,
+    MatOption,
     MatRow,
     MatRowDef,
+    MatSelect,
     MatSlideToggle,
     MatSort,
     MatSortHeader,
@@ -96,7 +108,7 @@ export class AdminUsers {
   private notification = inject(NotificationService);
 
   protected readonly isCompact = this.layoutService.isCompact;
-  protected readonly columns = ['username', 'email', 'active', 'roles'];
+  protected readonly columns = ['username', 'email', 'active', 'role'];
   protected readonly pageSizeOptions = [10, 20, 50];
 
   // Bumped to force a re-fetch of the current page after a change (an enabled toggle, or the edit
@@ -222,19 +234,28 @@ export class AdminUsers {
     this.toFirstPage();
   }
 
-  // The signed-in admin cannot deactivate their own account, so their own row's toggle is disabled.
-  // Identity is the immutable id; the server enforces the same rule regardless of the client.
+  // The signed-in admin can neither deactivate nor demote their own account, so their own row's
+  // controls are disabled. Identity is the immutable id; the server enforces the same rules
+  // regardless of the client.
   protected isOwn(user: AdminUser): boolean {
     return user.id === this.authService.currentUser()?.id;
   }
 
+  protected readonly roleOf = roleOf;
+
   protected onToggle(user: AdminUser, change: MatSlideToggleChange): void {
-    this.setEnabled(user.id, change.checked);
+    this.update(user.id, { enabled: change.checked, role: roleOf(user) });
   }
 
-  private setEnabled(id: number, enabled: boolean): void {
+  protected onRoleChange(user: AdminUser, change: MatSelectChange<UserRole>): void {
+    this.update(user.id, { enabled: user.enabled, role: change.value });
+  }
+
+  // Both inline controls submit the user's full editable state, so whichever one the admin touched
+  // carries the other's current value along unchanged.
+  private update(id: number, changes: UserUpdate): void {
     this.adminService
-      .setEnabled(id, enabled)
+      .updateUser(id, changes)
       .pipe(
         catchError((error: unknown) => {
           // A recognized conflict is expected and shows its dedicated message; anything else

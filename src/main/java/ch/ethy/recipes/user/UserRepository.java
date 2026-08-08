@@ -57,11 +57,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
   /**
    * Loads every currently active admin, locking those rows for the rest of the transaction.
    *
-   * <p>The deactivation guard uses this so concurrent deactivations serialize: {@code FOR UPDATE}
-   * is a current read (not a snapshot), so two admins deactivating each other cannot both observe
-   * the other as still active and lock everyone out — the second transaction blocks, then re-reads
-   * the reduced set once the first commits. Roles live in a JSON column, so admin membership is
-   * matched with {@code JSON_CONTAINS} in native SQL.
+   * <p>The last-active-admin guard uses this so concurrent changes serialize: {@code FOR UPDATE} is
+   * a current read (not a snapshot), so two admins being deactivated or demoted at the same moment
+   * cannot both observe the other as still active and lock everyone out — the second transaction
+   * blocks, then re-reads the reduced set once the first commits. Roles live in a JSON column, so
+   * admin membership is matched with {@code JSON_CONTAINS} in native SQL.
    */
   @Query(
       value =

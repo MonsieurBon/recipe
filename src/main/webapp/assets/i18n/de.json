@@ -59,7 +59,13 @@
     "areas": "Administrationsbereiche",
     "users": "Benutzer",
     "emailColumn": "E-Mail",
-    "rolesColumn": "Rollen",
+    "roleColumn": "Rolle",
+    "roleLabel": "Rolle",
+    "roleSelectAria": "Rolle von {{username}}",
+    "role": {
+      "user": "User",
+      "admin": "Admin"
+    },
     "activeColumn": "Aktiv",
     "activeLabel": "Aktiv",
     "activeToggleAria": "Aktiv für {{username}}",
@@ -83,6 +89,7 @@
     },
     "userConflict": {
       "selfDeactivation": "Du kannst dein eigenes Konto nicht deaktivieren.",
+      "selfDemotion": "Du kannst dir die Admin-Rolle nicht selbst entziehen.",
       "lastActiveAdmin": "Es muss mindestens ein aktiver Admin bleiben."
     }
   },

@@ -3,6 +3,7 @@ package ch.ethy.recipes.admin;
 import ch.ethy.recipes.security.AuthenticatedUser;
 import ch.ethy.recipes.user.LastActiveAdminException;
 import ch.ethy.recipes.user.SelfDeactivationException;
+import ch.ethy.recipes.user.SelfDemotionException;
 import ch.ethy.recipes.user.UserDto;
 import ch.ethy.recipes.user.UserNotFoundException;
 import ch.ethy.recipes.user.UserService;
@@ -49,7 +50,7 @@ public class AdminUserController {
       @PathVariable long id,
       @RequestBody @Valid UserUpdateRequest request,
       @AuthenticationPrincipal AuthenticatedUser principal) {
-    return userService.updateEnabled(id, request.enabled(), principal.getUserId());
+    return userService.updateUser(id, request.enabled(), request.role(), principal.getUserId());
   }
 
   @ExceptionHandler(UserNotFoundException.class)
@@ -59,6 +60,11 @@ public class AdminUserController {
   @ExceptionHandler(SelfDeactivationException.class)
   public ResponseEntity<ErrorReason> handleSelfDeactivation() {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorReason("selfDeactivation"));
+  }
+
+  @ExceptionHandler(SelfDemotionException.class)
+  public ResponseEntity<ErrorReason> handleSelfDemotion() {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorReason("selfDemotion"));
   }
 
   @ExceptionHandler(LastActiveAdminException.class)

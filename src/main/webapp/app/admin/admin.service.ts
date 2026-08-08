@@ -22,6 +22,23 @@ interface PagedResponse {
   page: { size: number; number: number; totalElements: number; totalPages: number };
 }
 
+/**
+ * The single role an admin picks for a user. The server stores a set and every account keeps the
+ * base `USER` role, so this is the editable part of that set rather than the set itself.
+ */
+export type UserRole = 'USER' | 'ADMIN';
+
+/** The full editable state of a user, submitted together on every change. */
+export interface UserUpdate {
+  enabled: boolean;
+  role: UserRole;
+}
+
+/** Reduces a user's stored role set to the single role the admin UI edits. */
+export function roleOf(user: AdminUser): UserRole {
+  return user.roles.includes('ADMIN') ? 'ADMIN' : 'USER';
+}
+
 /** The columns the admin user list may be ordered by, named as the response fields. */
 export type UserSortColumn = 'username' | 'email' | 'enabled';
 export type UserSortDirection = 'asc' | 'desc';
@@ -69,7 +86,12 @@ export class AdminService {
     );
   }
 
-  setEnabled(id: number, enabled: boolean): Observable<AdminUser> {
-    return this.http.put<AdminUser>(`/api/admin/users/${id}`, { enabled });
+  /**
+   * Persists a user's editable state. Both fields go on every request: the server compares them
+   * against what it has stored to decide what actually changed, and judges its admin guards on the
+   * resulting state rather than on either field alone.
+   */
+  updateUser(id: number, changes: UserUpdate): Observable<AdminUser> {
+    return this.http.put<AdminUser>(`/api/admin/users/${id}`, changes);
   }
 }

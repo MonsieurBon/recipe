@@ -4,6 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 // fixed translation keys for the dedicated notice each one shows.
 const CONFLICT_KEYS: Record<string, string> = {
   selfDeactivation: 'admin.userConflict.selfDeactivation',
+  selfDemotion: 'admin.userConflict.selfDemotion',
   lastActiveAdmin: 'admin.userConflict.lastActiveAdmin',
 };
 

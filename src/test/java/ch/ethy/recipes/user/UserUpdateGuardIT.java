@@ -21,7 +21,7 @@ import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 /**
- * Exercises the enabled-flag guard against a real MySQL: the native {@code JSON_CONTAINS ... FOR
+ * Exercises the admin update guards against a real MySQL: the native {@code JSON_CONTAINS ... FOR
  * UPDATE} admin query and the last-active-admin / self-deactivation rules the mocked-repo unit
  * tests cannot cover.
  *
@@ -41,7 +41,7 @@ import org.testcontainers.utility.MountableFile;
       "FLYWAY_PASSWORD=unused",
       "DB_PASSWORD=unused",
     })
-class UserEnabledGuardIT {
+class UserUpdateGuardIT {
 
   @Container @ServiceConnection
   static MySQLContainer mysql =
@@ -83,7 +83,7 @@ class UserEnabledGuardIT {
 
     assertThrows(
         LastActiveAdminException.class,
-        () -> userService.updateEnabled(onlyAdmin.getId(), false, 999L));
+        () -> userService.updateUser(onlyAdmin.getId(), false, Role.ADMIN, 999L));
 
     assertTrue(userRepository.findById(onlyAdmin.getId()).orElseThrow().isEnabled());
   }
@@ -93,7 +93,7 @@ class UserEnabledGuardIT {
     User first = save("first-admin", true, Role.USER, Role.ADMIN);
     save("second-admin", true, Role.USER, Role.ADMIN);
 
-    UserDto updated = userService.updateEnabled(first.getId(), false, 999L);
+    UserDto updated = userService.updateUser(first.getId(), false, Role.ADMIN, 999L);
 
     assertFalse(updated.enabled());
     assertFalse(userRepository.findById(first.getId()).orElseThrow().isEnabled());
@@ -106,7 +106,7 @@ class UserEnabledGuardIT {
 
     assertThrows(
         SelfDeactivationException.class,
-        () -> userService.updateEnabled(admin.getId(), false, admin.getId()));
+        () -> userService.updateUser(admin.getId(), false, Role.ADMIN, admin.getId()));
 
     assertTrue(userRepository.findById(admin.getId()).orElseThrow().isEnabled());
   }
@@ -115,7 +115,7 @@ class UserEnabledGuardIT {
   void disablingPersistsAndRevokesTheUsersTokens() {
     User user = save("roundtrip", true, Role.USER);
 
-    userService.updateEnabled(user.getId(), false, 999L);
+    userService.updateUser(user.getId(), false, Role.USER, 999L);
 
     UserDto reloaded = userService.findUser(user.getId()).orElseThrow();
     assertEquals(Set.of(Role.USER), reloaded.roles());

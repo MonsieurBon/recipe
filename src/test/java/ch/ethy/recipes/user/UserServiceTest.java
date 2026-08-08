@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import ch.ethy.recipes.security.TokenVersionService;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -237,7 +238,7 @@ class UserServiceTest {
     User bob = user(2L, "bob", true, Role.USER);
     when(userRepository.findById(2L)).thenReturn(Optional.of(bob));
 
-    UserDto dto = userService.updateEnabled(2L, false, 1L);
+    UserDto dto = userService.updateUser(2L, false, Role.USER, 1L);
 
     assertFalse(dto.enabled());
     assertFalse(bob.isEnabled());
@@ -252,7 +253,7 @@ class UserServiceTest {
     when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
     when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(alice, carol));
 
-    UserDto dto = userService.updateEnabled(1L, false, 99L);
+    UserDto dto = userService.updateUser(1L, false, Role.ADMIN, 99L);
 
     assertFalse(dto.enabled());
     verify(userRepository).save(alice);
@@ -264,7 +265,8 @@ class UserServiceTest {
     when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
     when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(alice));
 
-    assertThrows(LastActiveAdminException.class, () -> userService.updateEnabled(1L, false, 99L));
+    assertThrows(
+        LastActiveAdminException.class, () -> userService.updateUser(1L, false, Role.ADMIN, 99L));
 
     assertTrue(alice.isEnabled());
     verify(userRepository, never()).save(any());
@@ -275,7 +277,7 @@ class UserServiceTest {
     User bob = user(2L, "bob", true, Role.USER);
     when(userRepository.findById(2L)).thenReturn(Optional.of(bob));
 
-    userService.updateEnabled(2L, false, 1L);
+    userService.updateUser(2L, false, Role.USER, 1L);
 
     verify(tokenVersionService).revokeTokens(2L);
   }
@@ -285,7 +287,7 @@ class UserServiceTest {
     User bob = user(2L, "bob", false, Role.USER);
     when(userRepository.findById(2L)).thenReturn(Optional.of(bob));
 
-    userService.updateEnabled(2L, true, 1L);
+    userService.updateUser(2L, true, Role.USER, 1L);
 
     verify(tokenVersionService, never()).revokeTokens(anyLong());
   }
@@ -295,7 +297,8 @@ class UserServiceTest {
     User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
     when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
 
-    assertThrows(SelfDeactivationException.class, () -> userService.updateEnabled(1L, false, 1L));
+    assertThrows(
+        SelfDeactivationException.class, () -> userService.updateUser(1L, false, Role.ADMIN, 1L));
 
     assertTrue(alice.isEnabled());
     verify(userRepository, never()).findActiveAdminsForUpdate();
@@ -307,7 +310,7 @@ class UserServiceTest {
     User alice = user(1L, "alice", false, Role.USER, Role.ADMIN);
     when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
 
-    UserDto dto = userService.updateEnabled(1L, true, 99L);
+    UserDto dto = userService.updateUser(1L, true, Role.ADMIN, 99L);
 
     assertTrue(dto.enabled());
     verify(userRepository).save(alice);
@@ -318,7 +321,8 @@ class UserServiceTest {
   void updatingAMissingUserThrowsNotFound() {
     when(userRepository.findById(404L)).thenReturn(Optional.empty());
 
-    assertThrows(UserNotFoundException.class, () -> userService.updateEnabled(404L, false, 1L));
+    assertThrows(
+        UserNotFoundException.class, () -> userService.updateUser(404L, false, Role.USER, 1L));
 
     verify(userRepository, never()).save(any());
   }
@@ -328,10 +332,128 @@ class UserServiceTest {
     User bob = user(2L, "bob", true, Role.USER);
     when(userRepository.findById(2L)).thenReturn(Optional.of(bob));
 
-    UserDto dto = userService.updateEnabled(2L, true, 1L);
+    UserDto dto = userService.updateUser(2L, true, Role.USER, 1L);
 
     assertTrue(dto.enabled());
     verify(userRepository, never()).save(any());
     verify(userRepository, never()).findActiveAdminsForUpdate();
+  }
+
+  @Test
+  void promotingAUserGrantsAdminAlongsideTheBaseUserRole() {
+    User bob = user(2L, "bob", true, Role.USER);
+    when(userRepository.findById(2L)).thenReturn(Optional.of(bob));
+
+    UserDto dto = userService.updateUser(2L, true, Role.ADMIN, 1L);
+
+    assertEquals(List.of(Role.USER, Role.ADMIN), List.copyOf(dto.roles()));
+    assertEquals(Set.of(Role.USER, Role.ADMIN), bob.getRoles());
+    verify(userRepository).save(bob);
+  }
+
+  @Test
+  void demotingAnAdminLeavesOnlyTheBaseUserRole() {
+    User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
+    User carol = user(3L, "carol", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+    when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(alice, carol));
+
+    UserDto dto = userService.updateUser(1L, true, Role.USER, 99L);
+
+    assertEquals(List.of(Role.USER), List.copyOf(dto.roles()));
+    assertEquals(Set.of(Role.USER), alice.getRoles());
+    verify(userRepository).save(alice);
+  }
+
+  @Test
+  void aRoleChangeRevokesOutstandingTokensInBothDirections() {
+    User bob = user(2L, "bob", true, Role.USER);
+    User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
+    User carol = user(3L, "carol", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(2L)).thenReturn(Optional.of(bob));
+    when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+    when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(alice, carol));
+
+    userService.updateUser(2L, true, Role.ADMIN, 99L);
+    userService.updateUser(1L, true, Role.USER, 99L);
+
+    // A demotion must not leave the user wielding ADMIN for the rest of their access token's life,
+    // and a promotion should reach them without waiting out the same window.
+    verify(tokenVersionService).revokeTokens(2L);
+    verify(tokenVersionService).revokeTokens(1L);
+  }
+
+  @Test
+  void anUnchangedRoleDoesNotRevokeTokens() {
+    User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+
+    userService.updateUser(1L, true, Role.ADMIN, 99L);
+
+    verify(tokenVersionService, never()).revokeTokens(anyLong());
+    verify(userRepository, never()).save(any());
+  }
+
+  @Test
+  void demotingTheLastActiveAdminIsRefused() {
+    User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+    when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(alice));
+
+    assertThrows(
+        LastActiveAdminException.class, () -> userService.updateUser(1L, true, Role.USER, 99L));
+
+    assertEquals(Set.of(Role.USER, Role.ADMIN), alice.getRoles());
+    verify(userRepository, never()).save(any());
+  }
+
+  @Test
+  void demotingAnAdminIsAllowedWhileAnotherActiveAdminRemains() {
+    User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
+    User carol = user(3L, "carol", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+    when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(alice, carol));
+
+    UserDto dto = userService.updateUser(1L, true, Role.USER, 99L);
+
+    assertEquals(List.of(Role.USER), List.copyOf(dto.roles()));
+  }
+
+  @Test
+  void demotingADisabledAdminSkipsTheLastActiveAdminGuard() {
+    // A disabled admin is not an active admin, so dropping their role cannot reduce the active
+    // admin count and must not be refused just because nobody else holds the role right now.
+    User alice = user(1L, "alice", false, Role.USER, Role.ADMIN);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+    when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of());
+
+    UserDto dto = userService.updateUser(1L, false, Role.USER, 99L);
+
+    assertEquals(List.of(Role.USER), List.copyOf(dto.roles()));
+    verify(userRepository).save(alice);
+  }
+
+  @Test
+  void anAdminCannotDemoteTheirOwnAccount() {
+    User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
+    User carol = user(3L, "carol", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+    when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(alice, carol));
+
+    assertThrows(
+        SelfDemotionException.class, () -> userService.updateUser(1L, true, Role.USER, 1L));
+
+    assertEquals(Set.of(Role.USER, Role.ADMIN), alice.getRoles());
+    verify(userRepository, never()).save(any());
+  }
+
+  @Test
+  void anAdminMayPromoteThemselvesToNothingNewWithoutTrippingTheSelfGuard() {
+    User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+
+    UserDto dto = userService.updateUser(1L, true, Role.ADMIN, 1L);
+
+    assertEquals(List.of(Role.USER, Role.ADMIN), List.copyOf(dto.roles()));
   }
 }

@@ -82,40 +82,65 @@ public class UserService {
   }
 
   /**
-   * Enables or disables a user, enforcing two rules that protect access to administration. An admin
-   * may never deactivate their own account (a footgun with no use case). Deactivating a user must
-   * never leave zero active admins; the last-active-admin check locks the active-admin rows so
-   * concurrent deactivations cannot both slip through. Enabling is always safe and skips the guard.
+   * Applies an admin's changes to a user's enabled state and role, enforcing two rules that protect
+   * access to administration. An admin may never deactivate or demote their own account (a footgun
+   * with no use case). No change may leave zero active admins; that check locks the active-admin
+   * rows so concurrent changes cannot both slip through. Granting access — enabling a user or
+   * promoting them — can never violate either rule and skips the guard.
+   *
+   * <p>Both guards judge the transition, not the fields in isolation: they engage only when the
+   * user is an active admin now and would not be afterwards, whether that comes from the enabled
+   * flag, the role, or both changing at once.
    *
    * @param targetId the user to change
    * @param enabled the desired enabled state
+   * @param role the desired role; {@link Role#ADMIN} implies the base {@link Role#USER} role
    * @param principalId the authenticated admin performing the change, resolved from the token
    * @return the updated user
    */
   @Transactional
-  public UserDto updateEnabled(long targetId, boolean enabled, long principalId) {
+  public UserDto updateUser(long targetId, boolean enabled, Role role, long principalId) {
     User user =
         userRepository.findById(targetId).orElseThrow(() -> new UserNotFoundException(targetId));
-    if (user.isEnabled() == enabled) {
+    Set<Role> roles = rolesFor(role);
+    boolean enabledChanged = user.isEnabled() != enabled;
+    boolean rolesChanged = !user.getRoles().equals(roles);
+    if (!enabledChanged && !rolesChanged) {
       return toDto(user);
     }
-    if (!enabled) {
-      if (targetId == principalId) {
+    if (targetId == principalId) {
+      if (enabledChanged && !enabled) {
         throw new SelfDeactivationException();
       }
-      if (user.getRoles().contains(Role.ADMIN) && isLastActiveAdmin(targetId)) {
-        throw new LastActiveAdminException();
+      if (rolesChanged && !roles.contains(Role.ADMIN)) {
+        throw new SelfDemotionException();
       }
     }
+    // Only a user who counts as an active admin today can reduce the admin count by losing that
+    // standing; a disabled admin is already outside the count, so dropping their role is harmless.
+    boolean wasActiveAdmin = user.isEnabled() && user.getRoles().contains(Role.ADMIN);
+    if (wasActiveAdmin && !(enabled && roles.contains(Role.ADMIN)) && isLastActiveAdmin(targetId)) {
+      throw new LastActiveAdminException();
+    }
     user.setEnabled(enabled);
+    user.setRoles(roles);
     userRepository.save(user);
-    if (!enabled) {
-      // A disable is a hard revocation: bump the token version so outstanding access tokens are
-      // rejected at once instead of lingering until they expire. Refresh is refused separately, on
-      // the refresh path.
+    if ((enabledChanged && !enabled) || rolesChanged) {
+      // Withdrawing access is a hard revocation: bump the token version so outstanding access
+      // tokens are rejected at once instead of carrying the old standing until they expire — a
+      // demoted admin would otherwise keep wielding ADMIN for the rest of the token's life. A
+      // promotion bumps too, so the new role reaches the user just as promptly. Refresh is refused
+      // separately, on the refresh path.
       tokenVersionService.revokeTokens(targetId);
     }
     return toDto(user);
+  }
+
+  /**
+   * Expands the single role an admin picks into the stored set; every account keeps {@code USER}.
+   */
+  private static Set<Role> rolesFor(Role role) {
+    return role == Role.ADMIN ? EnumSet.of(Role.USER, Role.ADMIN) : EnumSet.of(Role.USER);
   }
 
   private boolean isLastActiveAdmin(long targetId) {
