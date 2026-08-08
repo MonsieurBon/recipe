@@ -18,4 +18,18 @@
       >{{ 'admin.activeLabel' | translate }}</mat-slide-toggle
     >
   </div>
+  <div class="edit-row">
+    <mat-form-field class="role-field" subscriptSizing="dynamic">
+      <mat-label>{{ 'admin.roleLabel' | translate }}</mat-label>
+      <mat-select
+        data-test-id="roleSelect"
+        [value]="role()"
+        [disabled]="data.isOwn"
+        (selectionChange)="changeRole($event)"
+      >
+        <mat-option value="USER">{{ 'admin.role.user' | translate }}</mat-option>
+        <mat-option value="ADMIN">{{ 'admin.role.admin' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
 </app-bottom-sheet>

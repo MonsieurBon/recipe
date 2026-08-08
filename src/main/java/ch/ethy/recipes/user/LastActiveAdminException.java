@@ -1,7 +1,7 @@
 package ch.ethy.recipes.user;
 
 /**
- * Thrown when deactivating a user would leave no active admin, which would lock everyone out of
- * administration. Surfaces as a 409.
+ * Thrown when a change would leave no active admin — deactivating the last one or dropping their
+ * admin role — which would lock everyone out of administration. Surfaces as a 409.
  */
 public class LastActiveAdminException extends RuntimeException {}

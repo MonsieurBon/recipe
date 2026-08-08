@@ -4380,8 +4380,10 @@
           <strong>Benutzer bearbeiten (compact).</strong> Tapping a row lifts its controls in
           a bottom sheet: the Aktiv toggle and the Rolle select persist on change, and the
           list behind updates as the sheet closes. On the signed-in admin's own account the
-          Löschen row is disabled — you cannot delete yourself, and the server enforces the
-          same rule. A role change reaches the user with their next token refresh.
+          Aktiv toggle, the Rolle select and the Löschen row are disabled — you cannot
+          deactivate, demote or delete yourself, and the server enforces the same rules. A role
+          change takes effect immediately: the user's next request already runs under the new
+          role.
         </p>
       </div>
 

@@ -97,7 +97,12 @@ public class User extends BaseEntity {
     this.roles.add(role);
   }
 
-  public void removeRole(Role role) {
-    this.roles.remove(role);
+  /**
+   * Replaces the whole role set in place, so the mapped collection instance stays the one Hibernate
+   * loaded.
+   */
+  public void setRoles(Set<Role> roles) {
+    this.roles.clear();
+    this.roles.addAll(roles);
   }
 }

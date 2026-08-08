@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
 
-import { AdminService } from './admin.service';
+import { AdminService, roleOf } from './admin.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -81,12 +81,12 @@ describe('AdminService', () => {
     req.flush({ content: [], page: { size: 10, number: 0, totalElements: 0, totalPages: 0 } });
   });
 
-  it('setEnabled PUTs the flag and returns the updated user', async () => {
-    const promise = firstValueFrom(service.setEnabled(5, false));
+  it('updateUser PUTs the full editable state and returns the updated user', async () => {
+    const promise = firstValueFrom(service.updateUser(5, { enabled: false, role: 'USER' }));
 
     const req = httpMock.expectOne('/api/admin/users/5');
     expect(req.request.method).toBe('PUT');
-    expect(req.request.body).toEqual({ enabled: false });
+    expect(req.request.body).toEqual({ enabled: false, role: 'USER' });
     req.flush({
       id: 5,
       username: 'mytest',
@@ -102,5 +102,30 @@ describe('AdminService', () => {
       enabled: false,
       roles: ['USER'],
     });
+  });
+
+  it('updateUser PUTs the admin role when promoting', async () => {
+    const promise = firstValueFrom(service.updateUser(5, { enabled: true, role: 'ADMIN' }));
+
+    const req = httpMock.expectOne('/api/admin/users/5');
+    expect(req.request.body).toEqual({ enabled: true, role: 'ADMIN' });
+    req.flush({
+      id: 5,
+      username: 'mytest',
+      email: 'my@test.ch',
+      enabled: true,
+      roles: ['USER', 'ADMIN'],
+    });
+
+    expect((await promise).roles).toEqual(['USER', 'ADMIN']);
+  });
+
+  it('roleOf reduces the stored role set to the single role the admin edits', () => {
+    const base = { id: 1, username: 'a', email: 'a@b.ch', enabled: true };
+
+    expect(roleOf({ ...base, roles: ['USER'] })).toBe('USER');
+    expect(roleOf({ ...base, roles: ['USER', 'ADMIN'] })).toBe('ADMIN');
+    // Order must not matter — the set is what counts, not how the server happened to serialize it.
+    expect(roleOf({ ...base, roles: ['ADMIN', 'USER'] })).toBe('ADMIN');
   });
 });

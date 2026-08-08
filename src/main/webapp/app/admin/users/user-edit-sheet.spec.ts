@@ -2,18 +2,19 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MatSelect } from '@angular/material/select';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { of, throwError } from 'rxjs';
 import { Mock } from 'vitest';
 
 import { NotificationService } from '../../utility/notification.service';
 import { provideTranslateTesting } from '../../testing/provide-translate-testing';
-import { AdminService, AdminUser } from '../admin.service';
+import { AdminService, AdminUser, UserUpdate } from '../admin.service';
 import { UserEditSheet, UserEditSheetData } from './user-edit-sheet';
 
 describe('UserEditSheet', () => {
   let fixture: ComponentFixture<UserEditSheet>;
-  let setEnabled: Mock<(id: number, enabled: boolean) => ReturnType<AdminService['setEnabled']>>;
+  let updateUser: Mock<(id: number, changes: UserUpdate) => ReturnType<AdminService['updateUser']>>;
   let showNotice: Mock<(key: string) => void>;
   let dismiss: Mock<() => void>;
 
@@ -26,7 +27,14 @@ describe('UserEditSheet', () => {
   };
 
   const setup = async (data: UserEditSheetData) => {
-    setEnabled = vi.fn((id: number, enabled: boolean) => of({ ...user, id, enabled }));
+    updateUser = vi.fn((id: number, changes: UserUpdate) =>
+      of({
+        ...data.user,
+        id,
+        enabled: changes.enabled,
+        roles: changes.role === 'ADMIN' ? ['USER', 'ADMIN'] : ['USER'],
+      }),
+    );
     showNotice = vi.fn();
     dismiss = vi.fn();
 
@@ -34,7 +42,7 @@ describe('UserEditSheet', () => {
       imports: [UserEditSheet],
       providers: [
         provideTranslateTesting(),
-        { provide: AdminService, useValue: { setEnabled } },
+        { provide: AdminService, useValue: { updateUser } },
         { provide: NotificationService, useValue: { showNotice } },
         { provide: MatBottomSheetRef, useValue: { dismiss } },
         { provide: MAT_BOTTOM_SHEET_DATA, useValue: data },
@@ -46,6 +54,7 @@ describe('UserEditSheet', () => {
   };
 
   const toggle = () => fixture.debugElement.query(By.directive(MatSlideToggle));
+  const roleSelect = () => fixture.debugElement.query(By.directive(MatSelect));
 
   it('reflects the user’s current enabled state', async () => {
     await setup({ user, isOwn: false });
@@ -73,12 +82,47 @@ describe('UserEditSheet', () => {
 
     toggle().triggerEventHandler('change', { checked: false });
 
-    expect(setEnabled).toHaveBeenCalledWith(5, false);
+    expect(updateUser).toHaveBeenCalledWith(5, { enabled: false, role: 'USER' });
+  });
+
+  it('reflects the user’s current role', async () => {
+    await setup({ user: { ...user, roles: ['USER', 'ADMIN'] }, isOwn: false });
+
+    expect((roleSelect().componentInstance as MatSelect).value).toBe('ADMIN');
+  });
+
+  it('disables the role select on the signed-in admin’s own account', async () => {
+    await setup({ user, isOwn: true });
+
+    expect((roleSelect().componentInstance as MatSelect).disabled).toBe(true);
+  });
+
+  it('persists a role change through the service, keeping the enabled state', async () => {
+    await setup({ user, isOwn: false });
+
+    roleSelect().triggerEventHandler('selectionChange', { value: 'ADMIN' });
+
+    expect(updateUser).toHaveBeenCalledWith(5, { enabled: true, role: 'ADMIN' });
+  });
+
+  it('shows the dedicated notice and reverts on a refused demotion', async () => {
+    await setup({ user: { ...user, roles: ['USER', 'ADMIN'] }, isOwn: false });
+    updateUser.mockReturnValue(
+      throwError(
+        () => new HttpErrorResponse({ status: 409, error: { reason: 'lastActiveAdmin' } }),
+      ),
+    );
+
+    roleSelect().triggerEventHandler('selectionChange', { value: 'USER' });
+    fixture.detectChanges();
+
+    expect(showNotice).toHaveBeenCalledWith('admin.userConflict.lastActiveAdmin');
+    expect((roleSelect().componentInstance as MatSelect).value).toBe('ADMIN');
   });
 
   it('shows the dedicated notice and reverts on a conflict', async () => {
     await setup({ user, isOwn: false });
-    setEnabled.mockReturnValue(
+    updateUser.mockReturnValue(
       throwError(
         () => new HttpErrorResponse({ status: 409, error: { reason: 'lastActiveAdmin' } }),
       ),

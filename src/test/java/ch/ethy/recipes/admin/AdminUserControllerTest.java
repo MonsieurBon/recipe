@@ -19,6 +19,7 @@ import ch.ethy.recipes.security.TokenVersionService;
 import ch.ethy.recipes.user.LastActiveAdminException;
 import ch.ethy.recipes.user.Role;
 import ch.ethy.recipes.user.SelfDeactivationException;
+import ch.ethy.recipes.user.SelfDemotionException;
 import ch.ethy.recipes.user.UserDto;
 import ch.ethy.recipes.user.UserNotFoundException;
 import ch.ethy.recipes.user.UserService;
@@ -156,7 +157,7 @@ class AdminUserControllerTest {
 
   @Test
   void updatesTheEnabledFlagUsingTheAuthenticatedPrincipalAsActor() throws Exception {
-    when(userService.updateEnabled(5L, false, 7L))
+    when(userService.updateUser(5L, false, Role.USER, 7L))
         .thenReturn(new UserDto(5L, "mytest", "my@test.ch", false, Set.of(Role.USER), "de"));
 
     mockMvc
@@ -164,52 +165,80 @@ class AdminUserControllerTest {
             put("/api/admin/users/5")
                 .with(authentication(authenticatedAs(7L)))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"enabled\":false}"))
+                .content("{\"enabled\":false,\"role\":\"USER\"}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(5))
         .andExpect(jsonPath("$.enabled").value(false));
 
-    verify(userService).updateEnabled(5L, false, 7L);
+    verify(userService).updateUser(5L, false, Role.USER, 7L);
   }
 
   @Test
   void refusingToDisableYourOwnAccountYieldsConflict() throws Exception {
-    when(userService.updateEnabled(7L, false, 7L)).thenThrow(new SelfDeactivationException());
+    when(userService.updateUser(7L, false, Role.USER, 7L))
+        .thenThrow(new SelfDeactivationException());
 
     mockMvc
         .perform(
             put("/api/admin/users/7")
                 .with(authentication(authenticatedAs(7L)))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"enabled\":false}"))
+                .content("{\"enabled\":false,\"role\":\"USER\"}"))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.reason").value("selfDeactivation"));
   }
 
   @Test
+  void refusingToDemoteYourOwnAccountYieldsConflict() throws Exception {
+    when(userService.updateUser(7L, true, Role.USER, 7L)).thenThrow(new SelfDemotionException());
+
+    mockMvc
+        .perform(
+            put("/api/admin/users/7")
+                .with(authentication(authenticatedAs(7L)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":true,\"role\":\"USER\"}"))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.reason").value("selfDemotion"));
+  }
+
+  @Test
+  void anUnknownRoleIsRejectedAsBadRequest() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/admin/users/5")
+                .with(authentication(authenticatedAs(7L)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":true,\"role\":\"SUPERADMIN\"}"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void refusingToDisableTheLastActiveAdminYieldsConflict() throws Exception {
-    when(userService.updateEnabled(5L, false, 7L)).thenThrow(new LastActiveAdminException());
+    when(userService.updateUser(5L, false, Role.USER, 7L))
+        .thenThrow(new LastActiveAdminException());
 
     mockMvc
         .perform(
             put("/api/admin/users/5")
                 .with(authentication(authenticatedAs(7L)))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"enabled\":false}"))
+                .content("{\"enabled\":false,\"role\":\"USER\"}"))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.reason").value("lastActiveAdmin"));
   }
 
   @Test
   void updatingAnUnknownUserYieldsNotFound() throws Exception {
-    when(userService.updateEnabled(404L, false, 7L)).thenThrow(new UserNotFoundException(404L));
+    when(userService.updateUser(404L, false, Role.USER, 7L))
+        .thenThrow(new UserNotFoundException(404L));
 
     mockMvc
         .perform(
             put("/api/admin/users/404")
                 .with(authentication(authenticatedAs(7L)))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"enabled\":false}"))
+                .content("{\"enabled\":false,\"role\":\"USER\"}"))
         .andExpect(status().isNotFound());
   }
 
