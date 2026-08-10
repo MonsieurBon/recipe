@@ -34,16 +34,33 @@
   }
 }
 
+// The design's settings rows: every row shares one axis and one type size — the label holds the
+// leading edge, the control trails — with a hairline dividing each row from the next. The last row
+// drops its line so the sheet ends on the surface rather than on a rule.
 .edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
   padding: 0.85rem 1.5rem;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  font-size: 0.95rem;
+
+  // Material types the toggle's own label a step below body text, which would leave it the odd one
+  // out beside the plain-text labels next to it. Setting the token here rather than restyling the
+  // label keeps one size for the whole row, and custom properties reach into the toggle's markup
+  // where a component style sheet cannot.
+  --mat-slide-toggle-label-text-size: 0.95rem;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
 
   // The toggle fills the row, so its label sits at the leading edge and the switch trails.
   .row-toggle {
     width: 100%;
   }
 
-  // The select spans the row like the toggle above it, so both controls share one edge.
-  .role-field {
-    width: 100%;
+  .row-label {
+    flex: 1;
   }
 }

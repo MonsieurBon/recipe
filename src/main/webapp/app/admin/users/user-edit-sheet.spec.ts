@@ -91,6 +91,15 @@ describe('UserEditSheet', () => {
     expect((roleSelect().componentInstance as MatSelect).value).toBe('ADMIN');
   });
 
+  it('gives the role select an accessible name naming the user', async () => {
+    await setup({ user, isOwn: false });
+
+    // The visible "Rolle" text sits in the row rather than inside the control, so the select
+    // carries its own accessible name.
+    const select: HTMLElement = fixture.nativeElement.querySelector('[data-test-id="roleSelect"]');
+    expect(select.getAttribute('aria-label')).toContain('mytest');
+  });
+
   it('disables the role select on the signed-in admin’s own account', async () => {
     await setup({ user, isOwn: true });
 

@@ -1,5 +1,11 @@
 @use '@angular/material' as mat;
 @use 'layout' as layout;
+
+// The design's switch geometry (design-spec.html, `.tgl`).
+$switch-track-width: 40px;
+$switch-track-height: 22px;
+$switch-thumb-size: 16px;
+$switch-thumb-inset: 3px;
 @use 'assets/icons/material-icons';
 @use 'assets/fonts/roboto';
 @use 'assets/fonts/fraunces';
@@ -32,6 +38,34 @@ h2 {
     (
       elevated-container-shape: 18px,
       outlined-container-shape: 18px,
+    )
+  );
+
+  // The design's switch is markedly smaller than Material's, so it reads as one control in a
+  // settings row rather than the loudest thing in it: a 40x22 track with a 16px thumb inset 3px.
+  // Material grows the thumb to 24px when selected and 28px while pressed, both of which would
+  // spill out of a track this short, so every state keeps the one size the design draws. The state
+  // layer follows the track down; left at its default it would ring wider than the switch itself.
+  @include mat.slide-toggle-overrides(
+    (
+      track-width: $switch-track-width,
+      track-height: $switch-track-height,
+      unselected-handle-size: $switch-thumb-size,
+      selected-handle-size: $switch-thumb-size,
+      pressed-handle-size: $switch-thumb-size,
+      state-layer-size: 32px,
+      // Not the thumb's own width (the sizes above give it that) — this is what Material subtracts
+      // from the track to get the distance the thumb travels. M3 leaves it unset, which makes that
+      // subtraction invalid and collapses the travel to nothing, stranding the thumb at whatever
+      // its margins happen to say. Counting the insets in stops it short of each end instead.
+      handle-width: $switch-thumb-size + $switch-thumb-inset * 2,
+      // Material sets the thumb's resting offset per state — 8px off the left when unselected,
+      // 24px when selected — which is what left the two ends looking uneven at this size. One inset
+      // for every state hands the movement back to the travel above, so both ends match.
+      unselected-handle-horizontal-margin: 0 $switch-thumb-inset,
+      selected-handle-horizontal-margin: 0 $switch-thumb-inset,
+      unselected-pressed-handle-horizontal-margin: 0 $switch-thumb-inset,
+      selected-pressed-handle-horizontal-margin: 0 $switch-thumb-inset,
     )
   );
 
@@ -76,6 +110,55 @@ h2 {
   .mdc-label {
     margin-left: 0;
   }
+}
+
+// The design's compact value picker ("User ⌄", the paginator's page size): a hairline pill holding
+// just the current value and a chevron, sized well below a form field's usual height. It carries no
+// label of its own — whatever precedes it names it (a settings row's leading text, a column header),
+// so each use gives the select an aria-label. Distinct from the design's full form fields, which
+// keep their label inside the box.
+.selval {
+  // Sized to hold either option rather than to fill its container, so the pill neither stretches
+  // across a settings row nor resizes as the value changes.
+  width: 7.5rem;
+
+  @include mat.form-field-overrides(
+    (
+      container-height: 34px,
+      container-vertical-padding: 6px,
+      outlined-container-shape: 8px,
+      outlined-outline-color: var(--mat-sys-outline-variant),
+    )
+  );
+
+  // The value is typed by the select, not by the surrounding form field, so it needs its own token.
+  @include mat.select-overrides(
+    (
+      trigger-text-size: 0.84rem,
+    )
+  );
+
+  // Material reserves 16px at each end for a floating label this pill never shows; trimming it is
+  // what brings the chevron in tight against the value.
+  .mat-mdc-text-field-wrapper {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+
+  .mat-mdc-form-field-infix {
+    min-height: unset;
+  }
+}
+
+// The pill's options render in an overlay at document level rather than inside .selval, so the list
+// is matched to the trigger's type size from here; without it the panel would open a size larger
+// than the value it is replacing.
+.selval-panel {
+  @include mat.option-overrides(
+    (
+      label-text-size: 0.84rem,
+    )
+  );
 }
 
 // The language bottom sheet: the design's card surface and a rounded top edge, in place of the
