@@ -493,14 +493,6 @@
     font-size: 1.25rem;
     margin: 0 0 1.1rem;
   }
-  .login-card .lfield {
-    border: 1px solid var(--a-line);
-    border-radius: 10px;
-    padding: 0.75rem 0.9rem;
-    font-size: 0.85rem;
-    color: var(--a-muted);
-    margin-bottom: 0.85rem;
-  }
   .login-card .lcta {
     display: block;
     text-align: center;
@@ -511,6 +503,58 @@
     font-size: 0.9rem;
     font-weight: 600;
     margin-top: 1.1rem;
+  }
+  .login-card .lsub {
+    margin: -0.8rem 0 1.1rem;
+    font-size: 0.85rem;
+    color: var(--a-muted);
+  }
+  .lhint {
+    margin: 1.2rem 0 0;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--a-muted);
+  }
+  .lhint b {
+    color: var(--a-accent-ink, var(--a-green));
+    font-weight: 600;
+  }
+  .ffield.err {
+    border-color: var(--a-error);
+    box-shadow: inset 0 0 0 1px var(--a-error);
+  }
+  .ffield.err small { color: var(--a-error); }
+  .fhint {
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--a-muted);
+    margin: -0.35rem 0.2rem 0.8rem;
+  }
+  .login-card.center { text-align: center; }
+  .done-ic {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--a-green-soft);
+    color: var(--a-accent-ink, var(--a-green));
+    display: grid;
+    place-items: center;
+    margin: 0.3rem auto 0.9rem;
+  }
+  .done-text {
+    font-size: 0.88rem;
+    color: var(--a-muted);
+    line-height: 1.5;
+    margin: -0.55rem 0 1.2rem;
+  }
+  .d-auth {
+    display: grid;
+    place-items: center;
+    padding: 3.2rem 1.5rem 4rem;
+  }
+  .d-auth .login-card {
+    width: 340px;
+    margin: 0;
   }
   .sheet-scrim {
     position: absolute;
@@ -4709,6 +4753,198 @@
   </section>
 
   <section>
+    <h2>Signing in &amp; registering</h2>
+    <p class="sub">
+      The front door. Both screens live on the anonymous shell — wordmark, globe and the
+      Login action on top, no bottom nav, no account menu — and both are one calm card near
+      the top of the canvas: a Fraunces title, one warm line, stacked fields, one pill CTA.
+      A guard bounces an anonymous visitor to Anmelden and, after signing in, continues to
+      the page they were headed for — a shared link survives the detour. A quiet cross-link
+      under each CTA keeps login and registration one tap apart in either direction, so
+      nobody has to hunt for the other door.
+    </p>
+
+    <div class="screens">
+      <!-- ============ SCREEN: login ============ -->
+      <div class="frame-group">
+        <div class="phone app-light">
+          <div class="appbar">
+            <span class="wordmark">Rezepte</span>
+            <span class="grow"></span>
+            <span class="iconbtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5"></circle>
+                <path d="M3.5 12h17"></path>
+                <path d="M12 3.5c2.5 2.3 3.8 5.2 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.2-3.8-8.5s1.3-6.2 3.8-8.5z"></path>
+              </svg>
+            </span>
+            <span class="appbar-action">Login</span>
+          </div>
+          <div class="login-card">
+            <p class="ltitle">Anmelden</p>
+            <p class="lsub">Schön, bist du wieder da.</p>
+            <div class="ffield"><small>Benutzername oder E-Mail</small>fabian</div>
+            <div class="ffield"><span class="ph">Passwort</span></div>
+            <span class="lcta">Anmelden</span>
+            <p class="lhint">Noch kein Konto? <b>Registrieren</b></p>
+          </div>
+        </div>
+        <p class="frame-caption">
+          <strong>Anmelden.</strong> One identity field takes Benutzername <em>oder</em>
+          E-Mail — nobody has to remember which one they signed up with. The card sits high
+          so the keyboard has room below, and the Registrieren link waits under the CTA
+          without competing with it.
+        </p>
+      </div>
+
+      <!-- ============ SCREEN: login, rejected ============ -->
+      <div class="frame-group">
+        <div class="phone app-light">
+          <div class="appbar">
+            <span class="wordmark">Rezepte</span>
+            <span class="grow"></span>
+            <span class="iconbtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5"></circle>
+                <path d="M3.5 12h17"></path>
+                <path d="M12 3.5c2.5 2.3 3.8 5.2 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.2-3.8-8.5s1.3-6.2 3.8-8.5z"></path>
+              </svg>
+            </span>
+            <span class="appbar-action">Login</span>
+          </div>
+          <div class="login-card">
+            <p class="ltitle">Anmelden</p>
+            <p class="lsub">Schön, bist du wieder da.</p>
+            <div class="ffield"><small>Benutzername oder E-Mail</small>fabian</div>
+            <div class="ffield"><small>Passwort</small>••••••••••</div>
+            <p class="ferr">Die Anmeldedaten stimmen nicht.</p>
+            <span class="lcta">Anmelden</span>
+            <p class="lhint">Noch kein Konto? <b>Registrieren</b></p>
+          </div>
+        </div>
+        <p class="frame-caption">
+          <strong>Rejected credentials.</strong> Wrong username, wrong e-mail, wrong
+          password — the answer is always this one form-level message, never a field error,
+          so the screen never confirms whether an account exists. Editing either field
+          clears it immediately. While a submit is in flight the CTA carries its spinner and
+          the fields lock, as pinned in Loading &amp; activity.
+        </p>
+      </div>
+
+      <!-- ============ SCREEN: register ============ -->
+      <div class="frame-group">
+        <div class="phone app-light">
+          <div class="appbar">
+            <span class="wordmark">Rezepte</span>
+            <span class="grow"></span>
+            <span class="iconbtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5"></circle>
+                <path d="M3.5 12h17"></path>
+                <path d="M12 3.5c2.5 2.3 3.8 5.2 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.2-3.8-8.5s1.3-6.2 3.8-8.5z"></path>
+              </svg>
+            </span>
+            <span class="appbar-action">Login</span>
+          </div>
+          <div class="login-card">
+            <p class="ltitle">Registrieren</p>
+            <p class="lsub">Dein Konto für Rezepte und Menüpläne.</p>
+            <div class="ffield err"><small>Benutzername</small>fabian</div>
+            <p class="ferr">Benutzername ist bereits vergeben.</p>
+            <div class="ffield"><small>E-Mail</small>f.brunner@example.com</div>
+            <div class="ffield"><span class="ph">Passwort</span></div>
+            <p class="fhint">Mindestens 12 Zeichen</p>
+            <span class="lcta">Registrieren</span>
+            <p class="lhint">Schon ein Konto? <b>Anmelden</b></p>
+          </div>
+        </div>
+        <p class="frame-caption">
+          <strong>Registrieren.</strong> Three fields make an account, and every rule
+          surfaces on its field: required values, a plausible e-mail, the twelve-character
+          password floor stated as a persistent hint <em>before</em> the first keystroke —
+          never sprung afterwards as a surprise. A taken username or e-mail comes back from
+          the server onto exactly its field, as the Errors section pins. Nothing here goes
+          global.
+        </p>
+      </div>
+
+      <!-- ============ SCREEN: registered ============ -->
+      <div class="frame-group">
+        <div class="phone app-dark">
+          <div class="appbar">
+            <span class="wordmark">Rezepte</span>
+            <span class="grow"></span>
+            <span class="iconbtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5"></circle>
+                <path d="M3.5 12h17"></path>
+                <path d="M12 3.5c2.5 2.3 3.8 5.2 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.2-3.8-8.5s1.3-6.2 3.8-8.5z"></path>
+              </svg>
+            </span>
+            <span class="appbar-action">Login</span>
+          </div>
+          <div class="login-card center">
+            <span class="done-ic">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 12.5 9.5 17.5 19.5 6.5"></path>
+              </svg>
+            </span>
+            <p class="ltitle">Konto erstellt</p>
+            <p class="done-text">
+              Dein Konto ist bereit. Melde dich jetzt mit deinen Zugangsdaten an.
+            </p>
+            <span class="lcta">Anmelden</span>
+          </div>
+        </div>
+        <p class="frame-caption">
+          <strong>Konto erstellt — here in the dark theme.</strong> Registering never signs
+          anyone in silently; the confirmation hands over to Anmelden deliberately, so the
+          first sign-in is the same practiced motion it will always be. Like every screen,
+          the auth cards simply follow the system theme.
+        </p>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 2.5rem">…and on larger screens</h2>
+    <p class="sub">
+      The card refuses to grow with the viewport: from 600&nbsp;px up it keeps a fixed,
+      comfortable width and centers on the paper canvas. Signed out there are no pills, no
+      search, no menus to arrange around it — one door, clearly lit.
+    </p>
+    <div class="deskwrap">
+      <div class="desk app-light">
+        <div class="d-bar">
+          <span class="wordmark">Rezepte</span>
+          <span class="grow"></span>
+          <span class="iconbtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="8.5"></circle>
+              <path d="M3.5 12h17"></path>
+              <path d="M12 3.5c2.5 2.3 3.8 5.2 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.2-3.8-8.5s1.3-6.2 3.8-8.5z"></path>
+            </svg>
+          </span>
+          <span class="appbar-action">Login</span>
+        </div>
+        <div class="d-body d-auth">
+          <div class="login-card">
+            <p class="ltitle">Anmelden</p>
+            <p class="lsub">Schön, bist du wieder da.</p>
+            <div class="ffield"><span class="ph">Benutzername oder E-Mail</span></div>
+            <div class="ffield"><span class="ph">Passwort</span></div>
+            <span class="lcta">Anmelden</span>
+            <p class="lhint">Noch kein Konto? <b>Registrieren</b></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="frame-caption" style="max-width: 44rem">
+      <strong>Anmelden, expanded.</strong> Same anatomy as on compact — the toolbar keeps the
+      anonymous trio of wordmark, globe and Login, and the canvas around the card stays empty
+      on purpose. Registrieren and the confirmation center the same way.
+    </p>
+  </section>
+
+  <section>
     <h2>Language</h2>
     <p class="sub">
       The UI speaks German, English, French and Italian. The picker — behind the signed-out
@@ -4832,9 +5068,11 @@
           </div>
           <div class="login-card">
             <p class="ltitle">Anmelden</p>
-            <div class="lfield">Benutzername</div>
-            <div class="lfield">Passwort</div>
+            <p class="lsub">Schön, bist du wieder da.</p>
+            <div class="ffield"><span class="ph">Benutzername oder E-Mail</span></div>
+            <div class="ffield"><span class="ph">Passwort</span></div>
             <span class="lcta">Anmelden</span>
+            <p class="lhint">Noch kein Konto? <b>Registrieren</b></p>
           </div>
         </div>
         <p class="frame-caption">
@@ -5300,6 +5538,14 @@
         statuses (401/409/422) pass through silently — the forms own those. On compact the
         snackbar is offset above the bottom nav. The ✕ dismiss is a tiny snackbar content
         component (the string-based API only renders text actions).
+      </li>
+      <li>
+        <b>Auth screens.</b> The existing login, register and confirmation components restyle
+        to this card — the behavior is already built: the single form-level 401 message,
+        duplicate username/e-mail returned onto their fields, the password floor, the
+        post-login return to the guarded page. New are the card layout on the anonymous
+        shell, the subtitle lines, the persistent password hint (<code>matHint</code>) and
+        the confirmation's check-mark hand-off to Anmelden.
       </li>
       <li>
         <b>Seasonal start page.</b> Data prerequisites: season months on ingredients and a
