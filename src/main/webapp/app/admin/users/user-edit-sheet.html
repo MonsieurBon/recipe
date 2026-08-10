@@ -10,6 +10,7 @@
     <mat-slide-toggle
       class="row-toggle"
       labelPosition="before"
+      hideIcon
       data-test-id="activeToggle"
       [aria-label]="'admin.activeToggleAria' | translate: { username: data.user.username }"
       [checked]="enabled()"
@@ -19,10 +20,12 @@
     >
   </div>
   <div class="edit-row">
-    <mat-form-field class="role-field" subscriptSizing="dynamic">
-      <mat-label>{{ 'admin.roleLabel' | translate }}</mat-label>
+    <span class="row-label">{{ 'admin.roleLabel' | translate }}</span>
+    <mat-form-field class="selval" appearance="outline" subscriptSizing="dynamic">
       <mat-select
         data-test-id="roleSelect"
+        panelClass="selval-panel"
+        [aria-label]="'admin.roleSelectAria' | translate: { username: data.user.username }"
         [value]="role()"
         [disabled]="data.isOwn"
         (selectionChange)="changeRole($event)"

@@ -94,6 +94,7 @@
       </th>
       <td mat-cell *matCellDef="let user">
         <mat-slide-toggle
+          hideIcon
           data-test-id="activeToggle"
           [aria-label]="'admin.activeToggleAria' | translate: { username: user.username }"
           [checked]="user.enabled"
@@ -105,9 +106,10 @@
     <ng-container matColumnDef="role">
       <th mat-header-cell *matHeaderCellDef>{{ 'admin.roleColumn' | translate }}</th>
       <td mat-cell *matCellDef="let user">
-        <mat-form-field class="role-field" subscriptSizing="dynamic">
+        <mat-form-field class="selval" appearance="outline" subscriptSizing="dynamic">
           <mat-select
             data-test-id="roleSelect"
+            panelClass="selval-panel"
             [aria-label]="'admin.roleSelectAria' | translate: { username: user.username }"
             [value]="roleOf(user)"
             [disabled]="isOwn(user)"

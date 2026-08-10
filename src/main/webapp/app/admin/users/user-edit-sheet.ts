@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { MatOption } from '@angular/material/core';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatFormField } from '@angular/material/form-field';
 import { MatSelect, MatSelectChange } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -26,15 +26,7 @@ export interface UserEditSheetData {
  */
 @Component({
   selector: 'app-user-edit-sheet',
-  imports: [
-    BottomSheet,
-    MatFormField,
-    MatLabel,
-    MatOption,
-    MatSelect,
-    MatSlideToggle,
-    TranslatePipe,
-  ],
+  imports: [BottomSheet, MatFormField, MatOption, MatSelect, MatSlideToggle, TranslatePipe],
   templateUrl: './user-edit-sheet.html',
   styleUrl: './user-edit-sheet.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
