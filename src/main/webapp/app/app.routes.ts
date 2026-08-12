@@ -1,13 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './admin/admin-guard';
-import { AdminShell } from './admin/admin-shell';
-import { AdminUsers } from './admin/users/admin-users';
-import { Konto } from './konto/konto';
 import { loggedInGuard } from './security/logged-in-guard';
-import { Login } from './security/login/login';
-import { LogoutFailed } from './security/logout-failed/logout-failed';
-import { Register } from './security/register/register';
-import { RegisterSuccess } from './security/register-success/register-success';
 
 // Route titles are translation keys; TranslatedTitleStrategy renders them as "{app name} - {page}"
 // in the active language.
@@ -15,40 +8,42 @@ export const routes: Routes = [
   {
     title: 'app.account',
     path: 'konto',
-    component: Konto,
+    loadComponent: () => import('./konto/konto').then((m) => m.Konto),
     canActivate: [loggedInGuard],
   },
   {
     title: 'app.login',
     path: 'login',
-    component: Login,
+    loadComponent: () => import('./security/login/login').then((m) => m.Login),
   },
   {
     title: 'logoutFailed.title',
     path: 'logout-failed',
-    component: LogoutFailed,
+    loadComponent: () =>
+      import('./security/logout-failed/logout-failed').then((m) => m.LogoutFailed),
   },
   {
     title: 'app.register',
     path: 'register',
-    component: Register,
+    loadComponent: () => import('./security/register/register').then((m) => m.Register),
   },
   {
     title: 'registerSuccess.title',
     path: 'register/success',
-    component: RegisterSuccess,
+    loadComponent: () =>
+      import('./security/register-success/register-success').then((m) => m.RegisterSuccess),
   },
   {
     title: 'app.administration',
     path: 'admin',
-    component: AdminShell,
+    loadComponent: () => import('./admin/admin-shell').then((m) => m.AdminShell),
     canActivate: [adminGuard],
     children: [
       { path: '', redirectTo: 'users', pathMatch: 'full' },
       {
         title: 'admin.users',
         path: 'users',
-        component: AdminUsers,
+        loadComponent: () => import('./admin/users/admin-users').then((m) => m.AdminUsers),
       },
       { path: '**', redirectTo: 'users' },
     ],

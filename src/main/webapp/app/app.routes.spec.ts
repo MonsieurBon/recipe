@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
@@ -13,6 +15,10 @@ describe('admin routes', () => {
       providers: [
         provideRouter(routes),
         provideTranslateTesting(),
+        // Landing on /admin/users constructs AdminUsers, which fetches the first page straight
+        // away; without a test backend that request hits the real one and its failure is logged.
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: AuthService,
           useValue: {
