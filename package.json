@@ -47,7 +47,6 @@
     "@angular/compiler-cli": "22.1.1",
     "@eslint/js": "10.0.1",
     "@playwright/mcp": "0.0.79",
-    "@semantic-release-plus/docker": "3.1.3",
     "@semantic-release/changelog": "7.0.0",
     "@semantic-release/commit-analyzer": "13.0.1",
     "@semantic-release/exec": "7.1.0",
@@ -64,8 +63,7 @@
   },
   "release": {
     "branches": [
-      "main",
-      "work"
+      "main"
     ],
     "plugins": [
       "@semantic-release/commit-analyzer",
@@ -76,7 +74,7 @@
         "@semantic-release/exec",
         {
           "prepareCmd": "mvn -B versions:set -DnewVersion=\"${nextRelease.version}\" -DgenerateBackupPoms=false",
-          "publishCmd": "mvn -B clean package -DskipTests=true && docker build --tag monsieurbon/recipe:build .",
+          "publishCmd": "mvn -B clean package -DskipTests=true && docker build --tag ghcr.io/monsieurbon/recipe:\"${nextRelease.version}\" --tag ghcr.io/monsieurbon/recipe:latest . && docker push ghcr.io/monsieurbon/recipe:\"${nextRelease.version}\" && docker push ghcr.io/monsieurbon/recipe:latest",
           "successCmd": "NEXT_VERSION=$(npm version $(npm version patch --no-git-tag-version)-SNAPSHOT --no-git-tag-version) && mvn -B versions:set -DnewVersion=$NEXT_VERSION -DgenerateBackupPoms=false && git commit -am \"chore(release): $NEXT_VERSION [skip ci]\" && git push"
         }
       ],
@@ -101,14 +99,6 @@
               "label": "JAR"
             }
           ]
-        }
-      ],
-      [
-        "@semantic-release-plus/docker",
-        {
-          "name": "monsieurbon/recipe:build",
-          "registry": "ghcr.io",
-          "skipLogin": true
         }
       ]
     ]

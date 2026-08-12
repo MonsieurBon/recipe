@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem } from '@angular/material/menu';
-import { TranslatePipe } from '@ngx-translate/core';
 
 import { LanguageService } from '../language.service';
 import { LanguageCode } from '../languages';
@@ -13,7 +12,7 @@ import { LanguageCode } from '../languages';
  */
 @Component({
   selector: 'app-language-menu',
-  imports: [MatMenu, MatMenuItem, MatIcon, TranslatePipe],
+  imports: [MatMenu, MatMenuItem, MatIcon],
   templateUrl: './language-menu.html',
   styleUrl: './language-menu.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

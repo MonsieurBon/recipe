@@ -41,7 +41,9 @@ class TokenVersionServiceTest {
 
   @Test
   void revokeTokensIncrementsInTheDatabaseAndInvalidatesTheCachedEntry() {
-    when(userRepository.findTokenVersionById(1L)).thenReturn(Optional.of(7), Optional.of(8));
+    when(userRepository.findTokenVersionById(1L))
+        .thenReturn(Optional.of(7))
+        .thenReturn(Optional.of(8));
     when(userRepository.incrementTokenVersion(1L)).thenReturn(1);
     TokenVersionService service = newService();
 
