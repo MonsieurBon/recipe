@@ -12,7 +12,8 @@
     "main": "Navigazione principale"
   },
   "common": {
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "cancel": "Annulla"
   },
   "field": {
     "username": "Nome utente",
@@ -87,8 +88,14 @@
       "activeFirst": "Prima gli attivi",
       "disabledFirst": "Prima i disattivati"
     },
+    "deleteUser": {
+      "action": "Elimina",
+      "title": "Eliminare l’utente?",
+      "message": "{{username}} verrà rimosso definitivamente. L’azione non può essere annullata."
+    },
     "userConflict": {
       "selfDeactivation": "Non puoi disattivare il tuo account.",
+      "selfDeletion": "Non puoi eliminare il tuo account.",
       "selfDemotion": "Non puoi togliere il ruolo di admin al tuo account.",
       "lastActiveAdmin": "Deve restare almeno un amministratore attivo."
     }

@@ -70,4 +70,16 @@ class TokenVersionServiceTest {
 
     assertThrows(UnknownUserException.class, () -> service.revokeTokens(99L));
   }
+
+  @Test
+  void forgettingAUserDropsTheCachedVersionSoTheirTokensStopValidating() {
+    when(userRepository.findTokenVersionById(1L)).thenReturn(Optional.of(7));
+    TokenVersionService service = newService();
+
+    assertEquals(7, service.getCurrentVersion(1L));
+    when(userRepository.findTokenVersionById(1L)).thenReturn(Optional.empty());
+    service.forgetUser(1L);
+
+    assertThrows(UnknownUserException.class, () -> service.getCurrentVersion(1L));
+  }
 }

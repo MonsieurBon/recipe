@@ -1,0 +1,16 @@
+<h2 mat-dialog-title data-test-id="confirmTitle">
+  {{ data.titleKey | translate: data.messageParams }}
+</h2>
+<mat-dialog-content>
+  <p class="message" data-test-id="confirmMessage">
+    {{ data.messageKey | translate: data.messageParams }}
+  </p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" data-test-id="cancelAction" (click)="cancel()">
+    {{ 'common.cancel' | translate }}
+  </button>
+  <button mat-button type="button" class="danger" data-test-id="confirmAction" (click)="confirm()">
+    {{ data.confirmKey | translate }}
+  </button>
+</mat-dialog-actions>

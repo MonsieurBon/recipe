@@ -12,7 +12,8 @@
     "main": "Hauptnavigation"
   },
   "common": {
-    "close": "Schliessen"
+    "close": "Schliessen",
+    "cancel": "Abbrechen"
   },
   "field": {
     "username": "Benutzername",
@@ -87,8 +88,14 @@
       "activeFirst": "Aktive zuerst",
       "disabledFirst": "Deaktivierte zuerst"
     },
+    "deleteUser": {
+      "action": "Löschen",
+      "title": "Benutzer löschen?",
+      "message": "{{username}} wird dauerhaft entfernt. Das kann nicht rückgängig gemacht werden."
+    },
     "userConflict": {
       "selfDeactivation": "Du kannst dein eigenes Konto nicht deaktivieren.",
+      "selfDeletion": "Du kannst dein eigenes Konto nicht löschen.",
       "selfDemotion": "Du kannst dir die Admin-Rolle nicht selbst entziehen.",
       "lastActiveAdmin": "Es muss mindestens ein aktiver Admin bleiben."
     }

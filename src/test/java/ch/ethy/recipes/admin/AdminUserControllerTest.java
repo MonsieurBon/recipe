@@ -3,11 +3,13 @@ package ch.ethy.recipes.admin;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -19,6 +21,7 @@ import ch.ethy.recipes.security.TokenVersionService;
 import ch.ethy.recipes.user.LastActiveAdminException;
 import ch.ethy.recipes.user.Role;
 import ch.ethy.recipes.user.SelfDeactivationException;
+import ch.ethy.recipes.user.SelfDeletionException;
 import ch.ethy.recipes.user.SelfDemotionException;
 import ch.ethy.recipes.user.UserDto;
 import ch.ethy.recipes.user.UserNotFoundException;
@@ -242,6 +245,44 @@ class AdminUserControllerTest {
                 .with(authentication(authenticatedAs(7L)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"enabled\":false,\"role\":\"USER\"}"))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void deletesAUserUsingTheAuthenticatedPrincipalAsActor() throws Exception {
+    mockMvc
+        .perform(delete("/api/admin/users/5").with(authentication(authenticatedAs(7L))))
+        .andExpect(status().isNoContent());
+
+    verify(userService).deleteUser(5L, 7L);
+  }
+
+  @Test
+  void refusingToDeleteYourOwnAccountYieldsConflict() throws Exception {
+    doThrow(new SelfDeletionException()).when(userService).deleteUser(7L, 7L);
+
+    mockMvc
+        .perform(delete("/api/admin/users/7").with(authentication(authenticatedAs(7L))))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.reason").value("selfDeletion"));
+  }
+
+  @Test
+  void refusingToDeleteTheLastActiveAdminYieldsConflict() throws Exception {
+    doThrow(new LastActiveAdminException()).when(userService).deleteUser(5L, 7L);
+
+    mockMvc
+        .perform(delete("/api/admin/users/5").with(authentication(authenticatedAs(7L))))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.reason").value("lastActiveAdmin"));
+  }
+
+  @Test
+  void deletingAnUnknownUserYieldsNotFound() throws Exception {
+    doThrow(new UserNotFoundException(404L)).when(userService).deleteUser(404L, 7L);
+
+    mockMvc
+        .perform(delete("/api/admin/users/404").with(authentication(authenticatedAs(7L))))
         .andExpect(status().isNotFound());
   }
 

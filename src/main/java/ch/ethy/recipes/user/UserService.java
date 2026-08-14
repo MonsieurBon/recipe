@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 public class UserService {
@@ -134,6 +136,40 @@ public class UserService {
       tokenVersionService.revokeTokens(targetId);
     }
     return toDto(user);
+  }
+
+  /**
+   * Removes a user's account. An admin may not delete their own account, and no deletion may leave
+   * zero active admins; that check locks the active-admin rows, so two admins deleting each other
+   * at the same moment cannot both slip through.
+   *
+   * @param targetId the user to remove
+   * @param principalId the authenticated admin performing the deletion, resolved from the token
+   */
+  @Transactional
+  public void deleteUser(long targetId, long principalId) {
+    if (targetId == principalId) {
+      throw new SelfDeletionException();
+    }
+    User user =
+        userRepository.findById(targetId).orElseThrow(() -> new UserNotFoundException(targetId));
+    // Only an active admin can reduce the admin count by being removed; a disabled admin is already
+    // outside the count, so deleting them is harmless.
+    if (user.isEnabled() && user.getRoles().contains(Role.ADMIN) && isLastActiveAdmin(targetId)) {
+      throw new LastActiveAdminException();
+    }
+    userRepository.delete(user);
+    // Forget the cached token version only once the row is really gone. While the deletion is
+    // uncommitted the row stays visible to concurrent readers, which would read the old version
+    // straight back into the cache and keep the deleted account's access tokens valid for the rest
+    // of the cache's lifetime.
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            tokenVersionService.forgetUser(targetId);
+          }
+        });
   }
 
   /**

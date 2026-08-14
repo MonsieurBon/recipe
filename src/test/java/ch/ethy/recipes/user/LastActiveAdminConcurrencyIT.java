@@ -31,10 +31,10 @@ import org.testcontainers.utility.MountableFile;
 
 /**
  * Pins the race the last-active-admin guard exists for: two admins losing their standing at the
- * same moment, each in its own transaction. A plain read-count-then-write check passes both — both
- * read a count of two before either commits — and leaves the system with zero admins, locking
- * everyone out of administration. The guard's locking read must serialize the two so exactly one
- * wins.
+ * same moment — by demotion, deactivation or deletion — each in its own transaction. A plain
+ * read-count-then-write check passes both, since both read a count of two before either commits,
+ * and leaves the system with zero admins, locking everyone out of administration. The guard's
+ * locking read must serialize the two so exactly one wins.
  *
  * <p>Unlike the other integration tests this one must <em>not</em> run inside a test-managed
  * transaction: the competing threads need to see committed state and take real row locks, which a
@@ -137,6 +137,34 @@ class LastActiveAdminConcurrencyIT {
         runConcurrently(
             () -> userService.updateUser(first.getId(), true, Role.USER, OTHER_ACTOR),
             () -> userService.updateUser(second.getId(), false, Role.ADMIN, OTHER_ACTOR));
+
+    assertOneRefusedAndOneAdminRemains(outcomes);
+  }
+
+  @Test
+  void concurrentDeletionsOfTheLastTwoAdminsLeaveExactlyOneAdmin() throws Exception {
+    User first = saveAdmin("first-admin");
+    User second = saveAdmin("second-admin");
+
+    // Neither admin is removing their own account, so the self-deletion guard never engages here.
+    // Only the locking read stops the two from wiping out administration between them.
+    List<Throwable> outcomes =
+        runConcurrently(
+            () -> userService.deleteUser(first.getId(), second.getId()),
+            () -> userService.deleteUser(second.getId(), first.getId()));
+
+    assertOneRefusedAndOneAdminRemains(outcomes);
+  }
+
+  @Test
+  void aConcurrentDeletionAndDemotionOfTheLastTwoAdminsLeaveExactlyOneAdmin() throws Exception {
+    User first = saveAdmin("first-admin");
+    User second = saveAdmin("second-admin");
+
+    List<Throwable> outcomes =
+        runConcurrently(
+            () -> userService.deleteUser(first.getId(), OTHER_ACTOR),
+            () -> userService.updateUser(second.getId(), true, Role.USER, OTHER_ACTOR));
 
     assertOneRefusedAndOneAdminRemains(outcomes);
   }
