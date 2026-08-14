@@ -628,7 +628,8 @@
     border-bottom: 1px solid var(--a-line);
   }
   .urow .who { flex: 1; min-width: 0; }
-  .urow .chev { color: var(--a-muted); flex-shrink: 0; }
+  .urow .chev,
+  .d-tr .chev { color: var(--a-muted); flex-shrink: 0; }
   .urow.dis .avatar,
   .urow.dis .who { opacity: 0.5; }
   .tag.mutd {
@@ -702,7 +703,8 @@
     z-index: 4;
     box-shadow: 0 12px 32px rgba(15, 22, 15, 0.3);
   }
-  .dialog .dtitle {
+  .dialog .dtitle,
+  .sheet .dtitle {
     font-family: 'Fraunces', Georgia, serif;
     font-variation-settings: 'opsz' 40;
     font-weight: 600;
@@ -783,15 +785,6 @@
   .d-tr.cols-u { grid-template-columns: 1.05fr 1.6fr 0.55fr 0.9fr 34px; }
   .d-tr.dis > span:first-child,
   .d-tr.dis .cell-mail { opacity: 0.5; }
-  .rowbtn {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    color: var(--a-error);
-  }
-  .rowbtn.dim { opacity: 0.3; }
   .d-pager {
     display: flex;
     align-items: center;
@@ -4022,20 +4015,40 @@
             <span class="chip">Admins</span>
             <span class="grow"></span>
           </div>
-          <div class="d-thead">
-            <span>Benutzername</span><span>E-Mail</span><span>Rollen</span>
+          <div class="d-thead cols-u">
+            <span>Benutzername</span><span>E-Mail</span><span>Aktiv</span><span>Rolle</span><span></span>
           </div>
-          <div class="d-tr">
+          <div class="d-tr cols-u">
             <span>Fabian</span><span class="cell-mail">fabian@example.com</span>
+            <span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 12.5 9.5 17.5 19.5 6.5"></path>
+              </svg>
+            </span>
             <span><span class="tag">User</span></span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.5 5.5 16 12l-6.5 6.5"></path>
+            </svg>
           </div>
-          <div class="d-tr">
+          <div class="d-tr cols-u">
             <span>adminuser</span><span class="cell-mail">adminuser@example.com</span>
-            <span><span class="tag">User</span> <span class="tag amber">Admin</span></span>
+            <span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 12.5 9.5 17.5 19.5 6.5"></path>
+              </svg>
+            </span>
+            <span><span class="tag amber">Admin</span></span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.5 5.5 16 12l-6.5 6.5"></path>
+            </svg>
           </div>
-          <div class="d-tr">
+          <div class="d-tr cols-u dis">
             <span>mytest</span><span class="cell-mail">my@test.ch</span>
+            <span></span>
             <span><span class="tag">User</span></span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.5 5.5 16 12l-6.5 6.5"></path>
+            </svg>
           </div>
         </div>
       </div>
@@ -4054,13 +4067,16 @@
     <h2>Editing in the admin area</h2>
     <p class="sub">
       The Navigation section shows where administration lives; this one shows how it edits.
-      On compact, list rows stay read-only summaries — tapping one lifts the controls in a
-      bottom sheet, the same container the language picker uses. From 600&nbsp;px up the
-      table is wide enough to edit inline. Changes persist as they are made — no save button,
-      no edit mode. Every destructive action confirms in a small dialog first, and when the
-      server refuses one — your own account, an ingredient recipes still use — the reason
-      replaces the dialog text right there; the generic snackbar stays reserved for errors
-      nobody can act on.
+      List rows are read-only summaries at every width — tapping one opens the entity's
+      editor, in a bottom sheet on compact (the same container the language picker uses)
+      and as a centered dialog from 600&nbsp;px up; on compact, dialogs only ever ask
+      questions. Editors made of switches and selects persist each change as it is made —
+      no save button, no edit mode; as soon as an editor carries text input or creates
+      something, it gets Speichern/Abbrechen instead. Every destructive action confirms in
+      a small dialog first — a pure question that closes on the answer. When the server
+      then refuses — your own account, an ingredient recipes still use — the reason appears
+      inline in the editor the action came from, the same way the login and registration
+      forms show theirs; the generic snackbar stays reserved for errors nobody can act on.
     </p>
 
     <div class="screens">
@@ -4377,13 +4393,15 @@
           </div>
         </div>
         <p class="frame-caption">
-          <strong>Benutzer bearbeiten (compact).</strong> Tapping a row lifts its controls in
-          a bottom sheet: the Aktiv toggle and the Rolle select persist on change, and the
-          list behind updates as the sheet closes. On the signed-in admin's own account the
-          Aktiv toggle, the Rolle select and the Löschen row are disabled — you cannot
-          deactivate, demote or delete yourself, and the server enforces the same rules. A role
-          change takes effect immediately: the user's next request already runs under the new
-          role.
+          <strong>Benutzer bearbeiten.</strong> Tapping a row lifts its controls in a bottom
+          sheet: the Aktiv toggle and the Rolle select persist on change, and the list behind
+          updates as the sheet closes. From 600&nbsp;px up the identical editor opens as a
+          centered dialog instead. On the signed-in admin's own account the Aktiv toggle, the
+          Rolle select and the Löschen row are disabled — you cannot deactivate, demote or
+          delete yourself, and the server enforces the same rules. A change the server still
+          refuses — deactivating the last active admin, say — snaps the control back and
+          states the reason inline in the editor. A role change takes effect immediately: the
+          user's next request already runs under the new role.
         </p>
       </div>
 
@@ -4441,6 +4459,35 @@
             </div>
           </div>
           <div class="sheet-scrim"></div>
+          <div class="sheet">
+            <div class="handle"></div>
+            <div class="acct-head">
+              <span class="avatar">M</span>
+              <span class="who"><b>mytest</b><span>my@test.ch</span></span>
+            </div>
+            <div class="mrow">
+              <span class="grow">Aktiv</span>
+              <span class="tgl off"></span>
+            </div>
+            <div class="mrow">
+              <span class="grow">Rolle</span>
+              <span class="selval">
+                User
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6.5 9.5 12 15l5.5-5.5"></path>
+                </svg>
+              </span>
+            </div>
+            <div class="mrow danger last">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 7h15"></path>
+                <path d="M9.5 7V5.4A1.4 1.4 0 0 1 10.9 4h2.2a1.4 1.4 0 0 1 1.4 1.4V7"></path>
+                <path d="M6.3 7l.9 12.1a1.5 1.5 0 0 0 1.5 1.4h6.6a1.5 1.5 0 0 0 1.5-1.4L17.7 7"></path>
+                <path d="M10.2 10.5v6.5M13.8 10.5v6.5"></path>
+              </svg>
+              <span class="grow">Benutzer löschen</span>
+            </div>
+          </div>
           <div class="dialog">
             <p class="dtitle">Benutzer löschen?</p>
             <p class="dtext">
@@ -4455,9 +4502,12 @@
         </div>
         <p class="frame-caption">
           <strong>Delete confirmation.</strong> One dialog pattern for every destructive
-          admin action — users, ingredients, recipes. When the server refuses, the reason
-          replaces the supporting text («Du kannst dein eigenes Konto nicht löschen») and the
-          actions collapse to a single Schliessen.
+          admin action — users, ingredients, recipes. It floats above the editor the action
+          came from and stays a pure question: Abbrechen or Löschen, then it closes. A
+          successful deletion closes the editor too, and the list behind reloads without the
+          row. If the server refuses — the last active admin, an ingredient still in use —
+          the reason appears inline in the editor underneath; the editor stays open, the
+          dialog itself never changes.
         </p>
       </div>
     </div>
@@ -4507,33 +4557,27 @@
           </div>
           <div class="d-tr cols-u">
             <span>adminuser</span><span class="cell-mail">adminuser@example.com</span>
-            <span><span class="tgl"></span></span>
-            <span><span class="selval">Admin
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5 12 15l5.5-5.5"></path></svg>
-            </span></span>
-            <span class="rowbtn dim">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4.5 7h15"></path>
-                <path d="M9.5 7V5.4A1.4 1.4 0 0 1 10.9 4h2.2a1.4 1.4 0 0 1 1.4 1.4V7"></path>
-                <path d="M6.3 7l.9 12.1a1.5 1.5 0 0 0 1.5 1.4h6.6a1.5 1.5 0 0 0 1.5-1.4L17.7 7"></path>
-                <path d="M10.2 10.5v6.5M13.8 10.5v6.5"></path>
+            <span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 12.5 9.5 17.5 19.5 6.5"></path>
               </svg>
             </span>
+            <span><span class="tag amber">Admin</span></span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.5 5.5 16 12l-6.5 6.5"></path>
+            </svg>
           </div>
           <div class="d-tr cols-u">
             <span>luca</span><span class="cell-mail">luca@example.com</span>
-            <span><span class="tgl"></span></span>
-            <span><span class="selval">Admin
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5 12 15l5.5-5.5"></path></svg>
-            </span></span>
-            <span class="rowbtn">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4.5 7h15"></path>
-                <path d="M9.5 7V5.4A1.4 1.4 0 0 1 10.9 4h2.2a1.4 1.4 0 0 1 1.4 1.4V7"></path>
-                <path d="M6.3 7l.9 12.1a1.5 1.5 0 0 0 1.5 1.4h6.6a1.5 1.5 0 0 0 1.5-1.4L17.7 7"></path>
-                <path d="M10.2 10.5v6.5M13.8 10.5v6.5"></path>
+            <span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 12.5 9.5 17.5 19.5 6.5"></path>
               </svg>
             </span>
+            <span><span class="tag amber">Admin</span></span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.5 5.5 16 12l-6.5 6.5"></path>
+            </svg>
           </div>
           <div class="d-pager">
             <span>Zeilen pro Seite</span>
@@ -4557,15 +4601,15 @@
     </div>
     <p class="frame-caption" style="max-width: 44rem">
       <strong>Benutzer, expanded (≥ 600 px), Admins filter applied.</strong> The width brings
-      the table back and editing goes inline — the same toggle, select and delete the sheet
-      carries on compact, persisting on change. The active Admins chip carries the same filter
+      the table back, but its rows stay read-only summaries — a check in Aktiv, the role as a
+      tag, a chevron because the row opens. Clicking one opens the same editor the compact
+      sheet carries, as a centered dialog. The active Admins chip carries the same filter
       the compact sort sheet holds: the table narrows to admin accounts and the paginator
       counts only them (two of the 23 users here); tapping the chip again restores the full
       list. The Benutzername, E-Mail and Aktiv headers sort on click — the arrow shows column
       and direction, a second click flips it (ascending by username here, so adminuser leads);
-      Rolle and the delete column don't sort. Any new term, filter or sort returns to the
-      first page. The signed-in admin (adminuser here) sees their own delete disabled. Search
-      above, the full paginator with page-size select below.
+      Rolle and the chevron column don't sort. Any new term, filter or sort returns to the
+      first page. Search above, the full paginator with page-size select below.
     </p>
 
     <div class="screens">
@@ -4673,11 +4717,11 @@
           <strong>Zutaten.</strong> The curated catalog, alphabetical. Season months collapse
           to a range in saffron — wrap-around seasons included (Lauch: Sep–Apr); year-round
           ingredients wear a quiet outline tag instead. The FAB creates, tapping a row edits —
-          both open the same dialog.
+          both open the same editor (next frame).
         </p>
       </div>
 
-      <!-- ============ SCREEN: Zutat dialog ============ -->
+      <!-- ============ SCREEN: Zutat editor ============ -->
       <div class="frame-group">
         <div class="phone app-light">
           <div class="appbar">
@@ -4710,10 +4754,11 @@
             </div>
           </div>
           <div class="sheet-scrim"></div>
-          <div class="dialog">
+          <div class="sheet">
+            <div class="handle"></div>
             <p class="dtitle">Zutat bearbeiten</p>
-            <div class="dfield"><small>Name</small>Tomaten</div>
-            <p class="dlabel">Saison</p>
+            <div class="ffield"><small>Name</small>Tomaten</div>
+            <p class="dlabel" style="margin-top: 0.8rem">Saison</p>
             <div class="months">
               <span class="mth">Jan</span>
               <span class="mth">Feb</span>
@@ -4738,11 +4783,15 @@
           </div>
         </div>
         <p class="frame-caption">
-          <strong>Zutat dialog.</strong> A name and twelve month toggles — the data behind
-          every season feature. Creating (via FAB) opens it empty as «Neue Zutat», without
-          the Löschen action. Deleting confirms like everywhere; an ingredient recipes still
-          use is refused with «Wird noch von 3 Rezepten verwendet» in that dialog. Identical
-          as a centered dialog at every width.
+          <strong>Zutat editor.</strong> A name and twelve month toggles — the data behind
+          every season feature. The free-text name is why this editor commits on Speichern
+          rather than persisting each change like the Benutzer editor. Creating (via FAB)
+          opens it empty as «Neue Zutat», without the Löschen action. Deleting confirms like
+          everywhere; an ingredient recipes still use is refused with «Wird noch von 3
+          Rezepten verwendet» inline in this editor — the message links to the Rezepte admin
+          tab pre-filtered to this ingredient, so the offending recipes are one tap away
+          whether there are three or a hundred. A bottom sheet here, the identical content
+          as a centered dialog from 600&nbsp;px up.
         </p>
       </div>
     </div>
@@ -4750,7 +4799,9 @@
     <p class="sub" style="margin-top: 0.5rem">
       The Rezepte admin tab repeats the Benutzer arrangement — rows on compact, table from
       600&nbsp;px up, with author and dates as the columns, an edit action leading into the
-      recipe editor (specced above) and the same delete confirmation.
+      recipe editor (specced above) and the same delete confirmation. Alongside its search it
+      carries an ingredient filter, addressable via the URL — that is where the Zutat
+      editor's «wird noch verwendet» refusal deep-links to.
     </p>
   </section>
 
@@ -5321,7 +5372,8 @@
     <h2>Errors &amp; notifications</h2>
     <p class="sub">
       Errors the user can act on stay where they happen — wrong credentials under the login
-      form, a taken username on its field. Everything nobody can act on — a server error, a
+      form, a taken username on its field, a refused admin change inline in the editor it
+      came from. Everything nobody can act on — a server error, a
       lost connection, an uncaught bug — surfaces as one generic snackbar:
       «Etwas ist schiefgelaufen. Bitte versuche es erneut.» It never blocks the page,
       auto-dismisses after about six seconds, and a ✕ icon closes it immediately; a newer
@@ -5569,13 +5621,15 @@
         issue).
       </li>
       <li>
-        <b>Admin editing.</b> Compact rows open a <code>MatBottomSheet</code> carrying the
-        row's controls; from 600&nbsp;px up the table edits inline
-        (<code>mat-slide-toggle</code>, <code>mat-select</code>) and pages with
+        <b>Admin editing.</b> Rows are read-only summaries at every width and open the
+        entity's editor on tap — a <code>MatBottomSheet</code> on compact, the same content
+        as a centered <code>MatDialog</code> from 600&nbsp;px up; the table pages with
         <code>MatPaginator</code>. All destructive actions share one confirm
-        <code>MatDialog</code> that also renders server refusals (self-deletion, ingredient
-        in use). The ingredient dialog's season picker is a twelve-toggle grid
-        (<code>mat-button-toggle-group multiple</code>).
+        <code>MatDialog</code> that stays a pure question; server refusals (self-deletion,
+        last active admin, ingredient in use) render inline in the editor the action came
+        from, and the ingredient-in-use message deep-links to the Rezepte admin tab
+        pre-filtered to the ingredient. The Zutat editor's season picker is a twelve-toggle
+        grid (<code>mat-button-toggle-group multiple</code>).
       </li>
       <li>
         <b>Recipe editor.</b> One <code>recipe-edit</code> screen for create
