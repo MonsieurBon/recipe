@@ -3,6 +3,7 @@ package ch.ethy.recipes.admin;
 import ch.ethy.recipes.security.AuthenticatedUser;
 import ch.ethy.recipes.user.LastActiveAdminException;
 import ch.ethy.recipes.user.SelfDeactivationException;
+import ch.ethy.recipes.user.SelfDeletionException;
 import ch.ethy.recipes.user.SelfDemotionException;
 import ch.ethy.recipes.user.UserDto;
 import ch.ethy.recipes.user.UserNotFoundException;
@@ -14,6 +15,7 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,6 +55,20 @@ public class AdminUserController {
     return userService.updateUser(id, request.enabled(), request.role(), principal.getUserId());
   }
 
+  /**
+   * Removes a user for good.
+   *
+   * @param id the user to remove
+   * @param principal the actor, resolved from the token by immutable id and never from the request,
+   *     so the self-deletion guard cannot be bypassed
+   */
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteUser(
+      @PathVariable long id, @AuthenticationPrincipal AuthenticatedUser principal) {
+    userService.deleteUser(id, principal.getUserId());
+  }
+
   @ExceptionHandler(UserNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public void handleUserNotFound() {}
@@ -60,6 +76,11 @@ public class AdminUserController {
   @ExceptionHandler(SelfDeactivationException.class)
   public ResponseEntity<ErrorReason> handleSelfDeactivation() {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorReason("selfDeactivation"));
+  }
+
+  @ExceptionHandler(SelfDeletionException.class)
+  public ResponseEntity<ErrorReason> handleSelfDeletion() {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorReason("selfDeletion"));
   }
 
   @ExceptionHandler(SelfDemotionException.class)

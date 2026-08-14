@@ -41,6 +41,15 @@ h2 {
     )
   );
 
+  // The confirm dialog: the design's card surface and a slightly tighter radius than Material's
+  // default, matching the other floating containers (menus, bottom sheets).
+  @include mat.dialog-overrides(
+    (
+      container-color: var(--mat-sys-surface-container-lowest),
+      container-shape: 24px,
+    )
+  );
+
   // The design's switch is markedly smaller than Material's, so it reads as one control in a
   // settings row rather than the loudest thing in it: a 40x22 track with a 16px thumb inset 3px.
   // Material grows the thumb to 24px when selected and 28px while pressed, both of which would

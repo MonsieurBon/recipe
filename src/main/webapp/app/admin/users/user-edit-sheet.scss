@@ -35,8 +35,7 @@
 }
 
 // The design's settings rows: every row shares one axis and one type size — the label holds the
-// leading edge, the control trails — with a hairline dividing each row from the next. The last row
-// drops its line so the sheet ends on the surface rather than on a rule.
+// leading edge, the control trails — with a hairline dividing each row from the next.
 .edit-row {
   display: flex;
   align-items: center;
@@ -51,7 +50,10 @@
   // where a component style sheet cannot.
   --mat-slide-toggle-label-text-size: 0.95rem;
 
-  &:last-of-type {
+  // The final row drops its line so the editor ends on the surface rather than on a rule. Matching
+  // the last row of the class — not the last element — keeps it correct as the refusal slot and the
+  // action bar come and go after it.
+  &:not(:has(~ .edit-row)) {
     border-bottom: none;
   }
 
@@ -62,5 +64,32 @@
 
   .row-label {
     flex: 1;
+  }
+}
+
+// The editor's one slot for a refusal that judges the account as a whole rather than a single
+// field — the last active admin, your own account. It sits after the controls and above the
+// actions, so the reason is the last thing read before the action that provoked it.
+.edit-error {
+  margin: 0;
+  padding: 0.85rem 1.5rem 0;
+  color: var(--mat-sys-error);
+  font: var(--mat-sys-body-small);
+}
+
+// Löschen leads the action bar, apart from the confirming actions that join it on the trailing
+// edge; destructive actions carry the error color everywhere in the design. The inset is the rows'
+// own inset less the button's internal padding, so the action reads down the same leading edge as
+// the labels above it rather than stepping in from them.
+.edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.85rem 0.75rem;
+
+  .danger {
+    --mat-button-text-label-text-color: var(--mat-sys-error);
+    --mat-button-text-state-layer-color: var(--mat-sys-error);
+    --mat-button-text-ripple-color: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
   }
 }

@@ -16,6 +16,7 @@ import ch.ethy.recipes.security.TokenVersionService;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +25,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 class UserServiceTest {
 
@@ -33,9 +36,22 @@ class UserServiceTest {
 
   @BeforeEach
   void setUp() {
+    // deleteUser defers its cache eviction to after commit, which needs an active synchronization.
+    TransactionSynchronizationManager.initSynchronization();
     tokenVersionService = mock(TokenVersionService.class);
     userRepository = mock(UserRepository.class);
     userService = new UserService(tokenVersionService, userRepository);
+  }
+
+  @AfterEach
+  void tearDown() {
+    TransactionSynchronizationManager.clearSynchronization();
+  }
+
+  /** Runs the callbacks the service registered, standing in for the transaction committing. */
+  private static void commit() {
+    TransactionSynchronizationManager.getSynchronizations()
+        .forEach(TransactionSynchronization::afterCommit);
   }
 
   @Test
@@ -455,5 +471,105 @@ class UserServiceTest {
     UserDto dto = userService.updateUser(1L, true, Role.ADMIN, 1L);
 
     assertEquals(List.of(Role.USER, Role.ADMIN), List.copyOf(dto.roles()));
+  }
+
+  @Test
+  void deletingAnotherUserRemovesTheirAccount() {
+    User bob = user(2L, "bob", true, Role.USER);
+    when(userRepository.findById(2L)).thenReturn(Optional.of(bob));
+
+    userService.deleteUser(2L, 1L);
+
+    verify(userRepository).delete(bob);
+  }
+
+  @Test
+  void anAdminCannotDeleteTheirOwnAccount() {
+    User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+
+    assertThrows(SelfDeletionException.class, () -> userService.deleteUser(1L, 1L));
+
+    verify(userRepository, never()).delete(any());
+  }
+
+  @Test
+  void deletingANonAdminPersistsWithoutTouchingTheAdminGuard() {
+    User bob = user(2L, "bob", true, Role.USER);
+    when(userRepository.findById(2L)).thenReturn(Optional.of(bob));
+
+    userService.deleteUser(2L, 1L);
+
+    verify(userRepository, never()).findActiveAdminsForUpdate();
+  }
+
+  @Test
+  void deletingAnAdminIsAllowedWhileAnotherActiveAdminRemains() {
+    User alice = user(1L, "alice", true, Role.USER, Role.ADMIN);
+    User carol = user(3L, "carol", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(3L)).thenReturn(Optional.of(carol));
+    when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(alice, carol));
+
+    userService.deleteUser(3L, 1L);
+
+    verify(userRepository).delete(carol);
+  }
+
+  @Test
+  void deletingTheLastActiveAdminIsRefused() {
+    User carol = user(3L, "carol", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(3L)).thenReturn(Optional.of(carol));
+    when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(carol));
+
+    assertThrows(LastActiveAdminException.class, () -> userService.deleteUser(3L, 1L));
+
+    verify(userRepository, never()).delete(any());
+  }
+
+  @Test
+  void deletingADisabledAdminSkipsTheLastActiveAdminGuard() {
+    User carol = user(3L, "carol", false, Role.USER, Role.ADMIN);
+    when(userRepository.findById(3L)).thenReturn(Optional.of(carol));
+
+    userService.deleteUser(3L, 1L);
+
+    verify(userRepository).delete(carol);
+    verify(userRepository, never()).findActiveAdminsForUpdate();
+  }
+
+  @Test
+  void aDeletedUsersCachedTokenVersionIsForgottenOnlyOnceTheDeletionCommits() {
+    User bob = user(2L, "bob", true, Role.USER);
+    when(userRepository.findById(2L)).thenReturn(Optional.of(bob));
+
+    userService.deleteUser(2L, 1L);
+    // While the deletion is uncommitted the row is still visible, so evicting now would let a
+    // concurrent request read the old version straight back into the cache.
+    verify(tokenVersionService, never()).forgetUser(2L);
+
+    commit();
+
+    verify(tokenVersionService).forgetUser(2L);
+  }
+
+  @Test
+  void aRefusedDeletionLeavesTheCachedTokenVersionAlone() {
+    User carol = user(3L, "carol", true, Role.USER, Role.ADMIN);
+    when(userRepository.findById(3L)).thenReturn(Optional.of(carol));
+    when(userRepository.findActiveAdminsForUpdate()).thenReturn(List.of(carol));
+
+    assertThrows(LastActiveAdminException.class, () -> userService.deleteUser(3L, 1L));
+    commit();
+
+    verify(tokenVersionService, never()).forgetUser(anyLong());
+  }
+
+  @Test
+  void deletingAMissingUserThrowsNotFound() {
+    when(userRepository.findById(404L)).thenReturn(Optional.empty());
+
+    assertThrows(UserNotFoundException.class, () -> userService.deleteUser(404L, 1L));
+
+    verify(userRepository, never()).delete(any());
   }
 }

@@ -12,7 +12,8 @@
     "main": "Main navigation"
   },
   "common": {
-    "close": "Close"
+    "close": "Close",
+    "cancel": "Cancel"
   },
   "field": {
     "username": "Username",
@@ -87,8 +88,14 @@
       "activeFirst": "Active first",
       "disabledFirst": "Disabled first"
     },
+    "deleteUser": {
+      "action": "Delete",
+      "title": "Delete user?",
+      "message": "{{username}} will be removed permanently. This can't be undone."
+    },
     "userConflict": {
       "selfDeactivation": "You can't deactivate your own account.",
+      "selfDeletion": "You can't delete your own account.",
       "selfDemotion": "You can't remove the admin role from your own account.",
       "lastActiveAdmin": "At least one active admin must remain."
     }

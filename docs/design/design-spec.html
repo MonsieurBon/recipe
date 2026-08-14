@@ -762,12 +762,14 @@
     color: var(--a-muted);
     margin: 0 0 0.7rem;
   }
+  /* Pulled out by exactly the .tbtn padding less the row inset, so the leading action reads down
+     the same edge as the labels above it instead of stepping in from them. */
   .dactions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 0.15rem;
-    margin: 0 -0.5rem;
+    margin: 0 -0.65rem;
   }
   .dactions .grow { flex: 1; }
   .tbtn {

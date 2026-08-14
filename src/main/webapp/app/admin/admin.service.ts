@@ -94,4 +94,9 @@ export class AdminService {
   updateUser(id: number, changes: UserUpdate): Observable<AdminUser> {
     return this.http.put<AdminUser>(`/api/admin/users/${id}`, changes);
   }
+
+  /** Removes a user's account for good. */
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/admin/users/${id}`);
+  }
 }

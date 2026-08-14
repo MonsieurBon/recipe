@@ -35,4 +35,22 @@
       </mat-select>
     </mat-form-field>
   </div>
+  @if (refusal()) {
+    <p class="edit-error" role="alert" data-test-id="editError">{{ refusal()! | translate }}</p>
+  }
+  <div class="edit-actions">
+    <button
+      mat-button
+      type="button"
+      class="danger"
+      data-test-id="deleteAction"
+      [disabled]="data.isOwn || deleting()"
+      (click)="deleteUser()"
+    >
+      {{ 'admin.deleteUser.action' | translate }}
+    </button>
+    @if (deleting()) {
+      <mat-spinner diameter="20"></mat-spinner>
+    }
+  </div>
 </app-bottom-sheet>

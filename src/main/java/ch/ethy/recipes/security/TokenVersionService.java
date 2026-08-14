@@ -48,4 +48,12 @@ public class TokenVersionService {
     }
     versionCache.invalidate(userId);
   }
+
+  /**
+   * Drops the user's locally cached version without changing the stored one, so the next check
+   * reads the database again.
+   */
+  public void forgetUser(long userId) {
+    versionCache.invalidate(userId);
+  }
 }

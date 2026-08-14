@@ -120,6 +120,16 @@ describe('AdminService', () => {
     expect((await promise).roles).toEqual(['USER', 'ADMIN']);
   });
 
+  it('deleteUser DELETEs the account', async () => {
+    const promise = firstValueFrom(service.deleteUser(5));
+
+    const req = httpMock.expectOne('/api/admin/users/5');
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+
+    await promise;
+  });
+
   it('roleOf reduces the stored role set to the single role the admin edits', () => {
     const base = { id: 1, username: 'a', email: 'a@b.ch', enabled: true };
 

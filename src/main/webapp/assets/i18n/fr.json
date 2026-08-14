@@ -12,7 +12,8 @@
     "main": "Navigation principale"
   },
   "common": {
-    "close": "Fermer"
+    "close": "Fermer",
+    "cancel": "Annuler"
   },
   "field": {
     "username": "Nom d'utilisateur",
@@ -87,8 +88,14 @@
       "activeFirst": "Actifs d’abord",
       "disabledFirst": "Désactivés d’abord"
     },
+    "deleteUser": {
+      "action": "Supprimer",
+      "title": "Supprimer l’utilisateur ?",
+      "message": "{{username}} sera supprimé définitivement. Cette action est irréversible."
+    },
     "userConflict": {
       "selfDeactivation": "Tu ne peux pas désactiver ton propre compte.",
+      "selfDeletion": "Tu ne peux pas supprimer ton propre compte.",
       "selfDemotion": "Tu ne peux pas retirer le rôle d’administrateur à ton propre compte.",
       "lastActiveAdmin": "Il doit rester au moins un administrateur actif."
     }
