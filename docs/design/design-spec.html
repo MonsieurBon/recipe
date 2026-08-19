@@ -463,6 +463,7 @@
     font-size: 0.95rem;
   }
   .mrow > svg { color: var(--a-muted); flex-shrink: 0; }
+  .mrow.last { border-bottom: none; }
   .mrow .grow { flex: 1; }
   .mrow .chev { color: var(--a-muted); }
   .mrow .val {
@@ -687,9 +688,6 @@
     white-space: nowrap;
   }
   .selval svg { color: var(--a-muted); flex-shrink: 0; }
-  .mrow.danger,
-  .mrow.danger > svg { color: var(--a-error); }
-  .mrow.last { border-bottom: none; }
   .sheet .acct-head { margin: 0.3rem 0 0.4rem; }
   .dialog {
     position: absolute;
@@ -4073,10 +4071,13 @@
       questions. Editors made of switches and selects persist each change as it is made —
       no save button, no edit mode; as soon as an editor carries text input or creates
       something, it gets Speichern/Abbrechen instead. Every destructive action confirms in
-      a small dialog first — a pure question that closes on the answer. When the server
-      then refuses — your own account, an ingredient recipes still use — the reason appears
-      inline in the editor the action came from, the same way the login and registration
-      forms show theirs; the generic snackbar stays reserved for errors nobody can act on.
+      a small dialog first — a pure question that closes on the answer. Refusals have two
+      homes, mirroring the sign-in screens: what the server pins to a single input — a
+      taken username, say — appears directly below its field, and what it judges about the
+      entity as a whole — the last active admin, an ingredient recipes still use — lands in
+      one editor-level slot after the editor's controls, directly above the actions. Either
+      way the editor stays open with the refused value still in place; the generic snackbar
+      stays reserved for errors nobody can act on.
     </p>
 
     <div class="screens">
@@ -4368,11 +4369,13 @@
               <span class="avatar">M</span>
               <span class="who"><b>mytest</b><span>my@test.ch</span></span>
             </div>
+            <div class="ffield"><small>Benutzername</small>mytest</div>
+            <div class="ffield"><small>E-Mail</small>my@test.ch</div>
             <div class="mrow">
               <span class="grow">Aktiv</span>
               <span class="tgl off"></span>
             </div>
-            <div class="mrow">
+            <div class="mrow last">
               <span class="grow">Rolle</span>
               <span class="selval">
                 User
@@ -4381,27 +4384,31 @@
                 </svg>
               </span>
             </div>
-            <div class="mrow danger last">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4.5 7h15"></path>
-                <path d="M9.5 7V5.4A1.4 1.4 0 0 1 10.9 4h2.2a1.4 1.4 0 0 1 1.4 1.4V7"></path>
-                <path d="M6.3 7l.9 12.1a1.5 1.5 0 0 0 1.5 1.4h6.6a1.5 1.5 0 0 0 1.5-1.4L17.7 7"></path>
-                <path d="M10.2 10.5v6.5M13.8 10.5v6.5"></path>
-              </svg>
-              <span class="grow">Benutzer löschen</span>
+            <div class="dactions">
+              <span class="tbtn danger">Löschen</span>
+              <span class="grow"></span>
+              <span class="tbtn">Abbrechen</span>
+              <span class="tbtn">Speichern</span>
             </div>
           </div>
         </div>
         <p class="frame-caption">
-          <strong>Benutzer bearbeiten.</strong> Tapping a row lifts its controls in a bottom
-          sheet: the Aktiv toggle and the Rolle select persist on change, and the list behind
-          updates as the sheet closes. From 600&nbsp;px up the identical editor opens as a
-          centered dialog instead. On the signed-in admin's own account the Aktiv toggle, the
-          Rolle select and the Löschen row are disabled — you cannot deactivate, demote or
-          delete yourself, and the server enforces the same rules. A change the server still
-          refuses — deactivating the last active admin, say — snaps the control back and
-          states the reason inline in the editor. A role change takes effect immediately: the
-          user's next request already runs under the new role.
+          <strong>Benutzer bearbeiten.</strong> Tapping a row lifts the editor in a bottom
+          sheet: Benutzername and E-Mail as fields, the Aktiv toggle and the Rolle select
+          below, all committed together with Speichern — the text input is what puts this
+          editor on the Speichern/Abbrechen pattern, and Löschen sits with the actions; the
+          list behind updates as the sheet closes. From 600&nbsp;px up the identical editor
+          opens as a centered dialog instead. The header above the fields is deliberate: it
+          pins which account the editor belongs to and keeps showing the saved identity even
+          while the fields below hold unsaved edits. On the signed-in admin's own account the
+          Benutzername and E-Mail fields, the Aktiv toggle, the Rolle select and Löschen are
+          all disabled — the admin changes their own identity through their own profile like
+          any other user, and you cannot deactivate, demote or delete yourself; the server
+          enforces the same rules. A taken username or
+          e-mail comes back onto exactly its field, as in registration; a refusal that
+          weighs the account as a whole — demoting the last active admin, say — appears in
+          the editor-level slot above the actions. A saved role change takes effect
+          immediately: the user's next request already runs under the new role.
         </p>
       </div>
 
@@ -4465,11 +4472,13 @@
               <span class="avatar">M</span>
               <span class="who"><b>mytest</b><span>my@test.ch</span></span>
             </div>
+            <div class="ffield"><small>Benutzername</small>mytest</div>
+            <div class="ffield"><small>E-Mail</small>my@test.ch</div>
             <div class="mrow">
               <span class="grow">Aktiv</span>
               <span class="tgl off"></span>
             </div>
-            <div class="mrow">
+            <div class="mrow last">
               <span class="grow">Rolle</span>
               <span class="selval">
                 User
@@ -4478,14 +4487,11 @@
                 </svg>
               </span>
             </div>
-            <div class="mrow danger last">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4.5 7h15"></path>
-                <path d="M9.5 7V5.4A1.4 1.4 0 0 1 10.9 4h2.2a1.4 1.4 0 0 1 1.4 1.4V7"></path>
-                <path d="M6.3 7l.9 12.1a1.5 1.5 0 0 0 1.5 1.4h6.6a1.5 1.5 0 0 0 1.5-1.4L17.7 7"></path>
-                <path d="M10.2 10.5v6.5M13.8 10.5v6.5"></path>
-              </svg>
-              <span class="grow">Benutzer löschen</span>
+            <div class="dactions">
+              <span class="tbtn danger">Löschen</span>
+              <span class="grow"></span>
+              <span class="tbtn">Abbrechen</span>
+              <span class="tbtn">Speichern</span>
             </div>
           </div>
           <div class="dialog">
@@ -4506,8 +4512,8 @@
           came from and stays a pure question: Abbrechen or Löschen, then it closes. A
           successful deletion closes the editor too, and the list behind reloads without the
           row. If the server refuses — the last active admin, an ingredient still in use —
-          the reason appears inline in the editor underneath; the editor stays open, the
-          dialog itself never changes.
+          the reason appears in the editor-level slot above the actions; the editor stays
+          open, the dialog itself never changes.
         </p>
       </div>
     </div>
@@ -4774,6 +4780,9 @@
               <span class="mth">Dez</span>
             </div>
             <p class="dhint">Keine Monate ausgewählt bedeutet ganzjährig erhältlich.</p>
+            <p class="ferr" style="margin: 0 0.1rem 0.5rem">
+              Wird noch von 3 Rezepten verwendet — <b>Rezepte anzeigen</b>
+            </p>
             <div class="dactions">
               <span class="tbtn danger">Löschen</span>
               <span class="grow"></span>
@@ -4784,14 +4793,13 @@
         </div>
         <p class="frame-caption">
           <strong>Zutat editor.</strong> A name and twelve month toggles — the data behind
-          every season feature. The free-text name is why this editor commits on Speichern
-          rather than persisting each change like the Benutzer editor. Creating (via FAB)
-          opens it empty as «Neue Zutat», without the Löschen action. Deleting confirms like
-          everywhere; an ingredient recipes still use is refused with «Wird noch von 3
-          Rezepten verwendet» inline in this editor — the message links to the Rezepte admin
-          tab pre-filtered to this ingredient, so the offending recipes are one tap away
-          whether there are three or a hundred. A bottom sheet here, the identical content
-          as a centered dialog from 600&nbsp;px up.
+          every season feature. Creating (via FAB) opens it empty as «Neue Zutat», without
+          the Löschen action. Deleting confirms like everywhere; an ingredient recipes still
+          use is refused with «Wird noch von 3 Rezepten verwendet» in the editor-level slot
+          above the actions, shown here — the message links to the Rezepte admin tab
+          pre-filtered to this ingredient, so the offending recipes are one tap away whether
+          there are three or a hundred. A bottom sheet here, the identical content as a
+          centered dialog from 600&nbsp;px up.
         </p>
       </div>
     </div>
@@ -5372,8 +5380,10 @@
     <h2>Errors &amp; notifications</h2>
     <p class="sub">
       Errors the user can act on stay where they happen — wrong credentials under the login
-      form, a taken username on its field, a refused admin change inline in the editor it
-      came from. Everything nobody can act on — a server error, a
+      form, a taken username on its field, a refused admin change in its editor: below the
+      field it pins to, or in the editor-level slot above the actions when it concerns the
+      entity as a whole (the admin-editing section pins both homes). Everything nobody can
+      act on — a server error, a
       lost connection, an uncaught bug — surfaces as one generic snackbar:
       «Etwas ist schiefgelaufen. Bitte versuche es erneut.» It never blocks the page,
       auto-dismisses after about six seconds, and a ✕ icon closes it immediately; a newer
@@ -5625,10 +5635,11 @@
         entity's editor on tap — a <code>MatBottomSheet</code> on compact, the same content
         as a centered <code>MatDialog</code> from 600&nbsp;px up; the table pages with
         <code>MatPaginator</code>. All destructive actions share one confirm
-        <code>MatDialog</code> that stays a pure question; server refusals (self-deletion,
-        last active admin, ingredient in use) render inline in the editor the action came
-        from, and the ingredient-in-use message deep-links to the Rezepte admin tab
-        pre-filtered to the ingredient. The Zutat editor's season picker is a twelve-toggle
+        <code>MatDialog</code> that stays a pure question; server refusals render inline in
+        the editor the action came from — field-scoped ones (taken username or e-mail)
+        below their field, entity-level ones (self-deletion, last active admin, ingredient
+        in use) in the slot above the actions — and the ingredient-in-use message
+        deep-links to the Rezepte admin tab pre-filtered to the ingredient. The Zutat editor's season picker is a twelve-toggle
         grid (<code>mat-button-toggle-group multiple</code>).
       </li>
       <li>
