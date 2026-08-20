@@ -51,6 +51,7 @@ A recipe management web application with a Spring Boot (Java) backend and Angula
 - **Small, deployable steps**: Each step is one reviewable unit — at least one test plus the implementation that satisfies it. Every step must leave the app green: compiles, all tests pass, no style violations. Prefer several small commits over one large one.
 - **Thin components**: Keep Angular components as simple as possible; move logic (subscriptions, navigation, side effects) into services.
 - **Architecture docs**: Keep the arc42 documentation in `docs/arc42/` up to date when implementing new features.
+- **Conventional commits**: Every commit subject starts with a type prefix — `feat: Delete a user from the admin area`. Releases are cut by `semantic-release` from `main`, and its commit analyzer only releases on `feat:` (minor), `fix:` and `perf:` (patch), a revert commit (patch), and a `BREAKING CHANGE:` footer (major). Everything else — `docs:`, `refactor:`, `test:`, `chore:`, `build:` — is correct to use but ships nothing on its own, and an **unprefixed commit is invisible to the release**: it neither triggers one nor appears in the changelog. So a user-facing change that lands without `feat:`/`fix:` silently never reaches production. When collapsing a branch, the prefix must describe the squashed whole, not the first commit.
 
 ## Code Style
 
