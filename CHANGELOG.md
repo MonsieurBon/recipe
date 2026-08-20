@@ -1,3 +1,10 @@
+# [2.19.0](https://github.com/MonsieurBon/recipes/compare/v2.18.0...v2.19.0) (2026-08-20)
+
+
+### Features
+
+* Delete a user from the admin area ([949df58](https://github.com/MonsieurBon/recipes/commit/949df58d106cab65799491c8b461efe3b7e06783)), closes [#93](https://github.com/MonsieurBon/recipes/issues/93)
+
 # [2.18.0](https://github.com/MonsieurBon/recipes/compare/v2.17.0...v2.18.0) (2026-07-16)
 
 
