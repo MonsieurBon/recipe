@@ -529,7 +529,8 @@
     font-size: 0.78rem;
     line-height: 1.4;
     color: var(--a-muted);
-    margin: -0.35rem 0.2rem 0.8rem;
+    /* Sits inside the field's reserved message line, adding no height of its own. */
+    margin: -1.2rem 0.2rem 0.1rem;
   }
   .login-card.center { text-align: center; }
   .done-ic {
@@ -823,15 +824,35 @@
     border-radius: 10px;
     padding: 0.5rem 0.85rem 0.55rem;
     font-size: 0.92rem;
-    margin-bottom: 0.8rem;
+    /* The gap below a field is its reserved message line (see Errors & notifications). */
+    margin-bottom: 1.35rem;
+    position: relative;
+    /* One constant height resting or filled — the label floats inside the fixed box. */
+    box-sizing: border-box;
+    min-height: 53px;
+    line-height: 1.45;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   .ffield small {
     display: block;
     font-size: 0.66rem;
+    line-height: 1.2;
     color: var(--a-muted);
   }
   .ffield .ph { color: var(--a-muted); }
-  .ffield.area { min-height: 84px; }
+  .ffield .eye {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--a-muted);
+  }
+  .ffield.area {
+    min-height: 84px;
+    justify-content: flex-start;
+  }
   .ffield.area p {
     margin: 0;
     font-size: 0.85rem;
@@ -869,6 +890,8 @@
     margin-bottom: 0;
     padding: 0.45rem 0.6rem;
     font-size: 0.88rem;
+    /* Ingredient cells are the compact exception: single-line, no floated label. */
+    min-height: 0;
   }
   .ingrow .rm {
     display: grid;
@@ -976,7 +999,8 @@
     font-size: 0.78rem;
     line-height: 1.4;
     color: var(--a-error);
-    margin: -0.35rem 0.2rem 0.8rem;
+    /* Sits inside the field's reserved message line, adding no height of its own. */
+    margin: -1.2rem 0.2rem 0.1rem;
   }
   .sheet .srow .sic { color: var(--a-muted); flex-shrink: 0; }
   .sheet .ffield { margin-top: 0.4rem; }
@@ -2237,8 +2261,11 @@
       the pencil on a recipe's detail — visible to its author and to admins — and the admin
       recipe list's edit action open the same form prefilled as «Rezept bearbeiten». One
       column in the order the finished recipe reads: photo, basics, ingredients, steps.
-      Speichern sits fixed in the top bar and validates on tap — every invalid field shows
-      its message directly beneath it, the first one scrolled into view. Closing with
+      Speichern sits fixed in the top bar and validates on tap — every invalid full-width
+      field shows its message in the line it reserves beneath itself, while the narrow
+      grids (the ingredient rows, the three numbers) ring their invalid fields and state
+      each violated rule once in a slot below the group, as the Errors section pins; the
+      first invalid field is scrolled into view. Closing with
       unsaved changes asks through the shared confirm dialog («Änderungen verwerfen?»).
       On larger screens the form keeps this single column at a capped width.
     </p>
@@ -4847,7 +4874,7 @@
             <p class="ltitle">Anmelden</p>
             <p class="lsub">Schön, bist du wieder da.</p>
             <div class="ffield"><small>Benutzername oder E-Mail</small>fabian</div>
-            <div class="ffield"><span class="ph">Passwort</span></div>
+            <div class="ffield"><span class="ph">Passwort</span><svg class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 12c2.3-4.2 5.4-6.3 9.2-6.3s6.9 2.1 9.2 6.3c-2.3 4.2-5.4 6.3-9.2 6.3S5.1 16.2 2.8 12z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></div>
             <span class="lcta">Anmelden</span>
             <p class="lhint">Noch kein Konto? <b>Registrieren</b></p>
           </div>
@@ -4879,7 +4906,7 @@
             <p class="ltitle">Anmelden</p>
             <p class="lsub">Schön, bist du wieder da.</p>
             <div class="ffield"><small>Benutzername oder E-Mail</small>fabian</div>
-            <div class="ffield"><small>Passwort</small>••••••••••</div>
+            <div class="ffield"><small>Passwort</small>••••••••••<svg class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 12c2.3-4.2 5.4-6.3 9.2-6.3s6.9 2.1 9.2 6.3c-2.3 4.2-5.4 6.3-9.2 6.3S5.1 16.2 2.8 12z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></div>
             <p class="ferr">Die Anmeldedaten stimmen nicht.</p>
             <span class="lcta">Anmelden</span>
             <p class="lhint">Noch kein Konto? <b>Registrieren</b></p>
@@ -4915,7 +4942,7 @@
             <div class="ffield err"><small>Benutzername</small>fabian</div>
             <p class="ferr">Benutzername ist bereits vergeben.</p>
             <div class="ffield"><small>E-Mail</small>f.brunner@example.com</div>
-            <div class="ffield"><span class="ph">Passwort</span></div>
+            <div class="ffield"><span class="ph">Passwort</span><svg class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 12c2.3-4.2 5.4-6.3 9.2-6.3s6.9 2.1 9.2 6.3c-2.3 4.2-5.4 6.3-9.2 6.3S5.1 16.2 2.8 12z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></div>
             <p class="fhint">Mindestens 12 Zeichen</p>
             <span class="lcta">Registrieren</span>
             <p class="lhint">Schon ein Konto? <b>Anmelden</b></p>
@@ -4926,8 +4953,10 @@
           surfaces on its field: required values, a plausible e-mail, the twelve-character
           password floor stated as a persistent hint <em>before</em> the first keystroke —
           never sprung afterwards as a surprise. A taken username or e-mail comes back from
-          the server onto exactly its field, as the Errors section pins. Nothing here goes
-          global.
+          the server onto exactly its field, as the Errors section pins — into the line the
+          field already reserves, so nothing below it moves. The eye on Passwort reveals
+          what was typed — the guard against a typo, chosen over a repeat-password field.
+          Nothing here goes global.
         </p>
       </div>
 
@@ -4993,7 +5022,7 @@
             <p class="ltitle">Anmelden</p>
             <p class="lsub">Schön, bist du wieder da.</p>
             <div class="ffield"><span class="ph">Benutzername oder E-Mail</span></div>
-            <div class="ffield"><span class="ph">Passwort</span></div>
+            <div class="ffield"><span class="ph">Passwort</span><svg class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 12c2.3-4.2 5.4-6.3 9.2-6.3s6.9 2.1 9.2 6.3c-2.3 4.2-5.4 6.3-9.2 6.3S5.1 16.2 2.8 12z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></div>
             <span class="lcta">Anmelden</span>
             <p class="lhint">Noch kein Konto? <b>Registrieren</b></p>
           </div>
@@ -5133,7 +5162,7 @@
             <p class="ltitle">Anmelden</p>
             <p class="lsub">Schön, bist du wieder da.</p>
             <div class="ffield"><span class="ph">Benutzername oder E-Mail</span></div>
-            <div class="ffield"><span class="ph">Passwort</span></div>
+            <div class="ffield"><span class="ph">Passwort</span><svg class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 12c2.3-4.2 5.4-6.3 9.2-6.3s6.9 2.1 9.2 6.3c-2.3 4.2-5.4 6.3-9.2 6.3S5.1 16.2 2.8 12z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></div>
             <span class="lcta">Anmelden</span>
             <p class="lhint">Noch kein Konto? <b>Registrieren</b></p>
           </div>
@@ -5384,7 +5413,20 @@
       Errors the user can act on stay where they happen — wrong credentials under the login
       form, a taken username on its field, a refused admin change in its editor: below the
       field it pins to, or in the editor-level slot above the actions when it concerns the
-      entity as a whole (the admin-editing section pins both homes). Everything nobody can
+      entity as a whole (the admin-editing section pins both homes). A field-pinned message
+      costs no motion: every form field reserves one message line below itself — that
+      reserved line is what spaces stacked fields apart — and an error, or a persistent hint
+      like the password rule, swaps into it without moving the fields or the actions around
+      them. Messages are written to fit that line; only one that has to wrap (the import
+      tip) takes a second and pushes. A grid of narrow fields — an ingredient row, the
+      recipe's three numbers — has no room for text beneath a cell: the invalid fields take
+      the error ring, and one slot below the whole group explains, each violated rule
+      stated once however many rows repeat it. That slot reserves nothing and takes space
+      only when it has something to say — those grids validate on Speichern, not under a
+      typing hand, so the push lands at a moment the eye is already being redirected.
+      Controls that never carry a field message — the
+      search bar, the compact value pills — drop the reserved line and sit tight.
+      Everything nobody can
       act on — a server error, a
       lost connection, an uncaught bug — surfaces as one generic snackbar:
       «Etwas ist schiefgelaufen. Bitte versuche es erneut.» It never blocks the page,
