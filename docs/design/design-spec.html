@@ -827,7 +827,9 @@
     /* The gap below a field is its reserved message line (see Errors & notifications). */
     margin-bottom: 1.35rem;
     position: relative;
-    /* One constant height resting or filled — the label floats inside the fixed box. */
+    /* One constant height resting or filled — the label floats inside the fixed box.
+       53px is the smallest clamp covering the filled anatomy (content plus hairline)
+       at this doc's font metrics; the app's height comes from Material's container token. */
     box-sizing: border-box;
     min-height: 53px;
     line-height: 1.45;
