@@ -41,6 +41,9 @@ jobs:
       - name: Merge the pull request
         env:
           GH_TOKEN: ${{ github.token }}
+          # The job checks out nothing, so gh has no git remote to infer the
+          # repository from and every call fails without this.
+          GH_REPO: ${{ github.repository }}
           BRANCH: ${{ github.event.workflow_run.head_branch }}
           SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
@@ -72,7 +75,7 @@ jobs:
           # --match-head-commit merges exactly the commit the build validated,
           # so a Dependabot rebase landing between the build and this step can
           # never put an untested head on main.
-          if gh pr merge "$pr" --merge --delete-branch --match-head-commit "$SHA"; then
+          if gh pr merge "$pr" --merge --match-head-commit "$SHA"; then
             echo "Merged #$pr at $SHA."
             exit 0
           fi
