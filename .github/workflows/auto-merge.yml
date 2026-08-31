@@ -1,0 +1,99 @@
+name: Auto-merge action bumps
+
+# Dependabot's github-actions bumps are merged unattended once the build is
+# green. The trigger is workflow_run rather than pull_request because a
+# GITHUB_TOKEN handed to a Dependabot-authored pull_request run is read-only,
+# and merging needs write access.
+on:
+  workflow_run:
+    workflows: [ "Build recipe" ]
+    types: [ completed ]
+
+# Merge one pull request at a time so two builds finishing together can't race
+# onto a main that is moving underneath them.
+concurrency:
+  group: auto-merge-main
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    # This job runs privileged — workflow_run grants write access in the base
+    # repository even when the build it reacts to ran on an untrusted fork — so
+    # nothing carried over from that build may be treated as authorization. A
+    # branch name is attacker-controlled on a fork and proves nothing; origin
+    # and author are what establish trust:
+    #   head_repository  rejects pull requests opened from a fork
+    #   actor            rejects same-repo branches Dependabot did not create
+    #   event            selects the pull_request build, ignoring the duplicate
+    #                    run that the push to the same branch produces
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Merge the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          # Scope to the github-actions ecosystem; every other Dependabot
+          # ecosystem is left to a human. This is a filter, not a trust check —
+          # the job's `if` above is what makes the merge safe.
+          case "$BRANCH" in
+            dependabot/github_actions/*) ;;
+            *) echo "$BRANCH is not a github-actions bump — nothing to do."; exit 0 ;;
+          esac
+
+          pr=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$pr" ]; then
+            echo "No open PR for $BRANCH — already merged or closed."
+            exit 0
+          fi
+
+          # `gh pr list --head` matches on branch name alone, without qualifying
+          # the source repository, so confirm the resolved pull request is the
+          # Dependabot one and not a same-named branch from somewhere else.
+          author=$(gh pr view "$pr" --json author --jq '.author.login')
+          if [ "$author" != "dependabot[bot]" ]; then
+            echo "::error::#$pr on $BRANCH is authored by $author, not dependabot[bot] — refusing to merge."
+            exit 1
+          fi
+
+          # --match-head-commit merges exactly the commit the build validated,
+          # so a Dependabot rebase landing between the build and this step can
+          # never put an untested head on main.
+          if gh pr merge "$pr" --merge --delete-branch --match-head-commit "$SHA"; then
+            echo "Merged #$pr at $SHA."
+            exit 0
+          fi
+
+          # A failed merge is usually a lost race, which the next build retries.
+          # Tell that apart from a real misconfiguration by re-reading the pull
+          # request rather than by matching on gh's error text.
+          IFS=$'\t' read -r state head mergeable < <(
+            gh pr view "$pr" --json state,headRefOid,mergeable \
+              --jq '[.state, .headRefOid, .mergeable] | @tsv'
+          )
+
+          if [ "$state" = "MERGED" ]; then
+            echo "::notice::#$pr was already merged by a concurrent run."
+          elif [ "$head" != "$SHA" ]; then
+            echo "::notice::#$pr moved from $SHA to $head (rebased). Awaiting the build of the new commit."
+          elif [ "$mergeable" != "MERGEABLE" ]; then
+            echo "::notice::#$pr is $mergeable at $SHA. Awaiting the build of a rebased commit."
+          else
+            # Open, still on the validated commit, and mergeable — yet the merge
+            # was refused. No rebase is coming to fix this one.
+            echo "::error::#$pr could not be merged at $SHA despite being open and mergeable. Check the repository's merge-method and branch-protection settings."
+            exit 1
+          fi
