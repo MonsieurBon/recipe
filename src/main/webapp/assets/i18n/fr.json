@@ -18,7 +18,9 @@
   "field": {
     "username": "Nom d'utilisateur",
     "email": "E-mail",
-    "password": "Mot de passe"
+    "password": "Mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe"
   },
   "validation": {
     "usernameRequired": "Le nom d'utilisateur est requis",
@@ -37,18 +39,24 @@
     "select": "Sélectionner la langue"
   },
   "login": {
+    "subtitle": "Ravi de te revoir.",
     "usernameOrEmail": "Nom d'utilisateur ou e-mail",
     "invalidCredentials": "Identifiants invalides",
     "registerHint": "Pas encore de compte ?"
   },
+  "register": {
+    "subtitle": "Ton compte pour tes recettes et tes menus.",
+    "passwordHint": "Au moins {{min}} caractères",
+    "loginHint": "Tu as déjà un compte ?"
+  },
   "registerSuccess": {
     "title": "Inscription réussie",
-    "message": "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter avec vos identifiants."
+    "message": "Ton compte a été créé avec succès. Tu peux maintenant te connecter avec tes identifiants."
   },
   "logoutFailed": {
     "title": "Échec de la déconnexion",
-    "message1": "Le serveur n'a pas pu confirmer la fin de votre session. Vous êtes déconnecté sur cet appareil, mais votre session pourrait être encore active.",
-    "message2": "Vous pouvez réessayer. Si le problème persiste, supprimez les cookies de ce site dans votre navigateur pour mettre fin à la session en toute sécurité.",
+    "message1": "Le serveur n'a pas pu confirmer la fin de ta session. Tu es déconnecté sur cet appareil, mais ta session pourrait être encore active.",
+    "message2": "Tu peux réessayer. Si le problème persiste, supprime les cookies de ce site dans ton navigateur pour mettre fin à la session en toute sécurité.",
     "retry": "Réessayer",
     "retryFailed": "La nouvelle tentative a échoué."
   },

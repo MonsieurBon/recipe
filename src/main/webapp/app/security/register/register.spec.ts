@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Mocked } from 'vitest';
-import { Router } from '@angular/router';
+import { Mocked, MockInstance } from 'vitest';
+import { provideRouter, Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { LanguageService } from '../../i18n/language.service';
 import { provideTranslateTesting } from '../../testing/provide-translate-testing';
@@ -11,21 +11,22 @@ describe('Register', () => {
   let component: Register;
   let fixture: ComponentFixture<Register>;
   let authServiceSpy: Mocked<Pick<AuthService, 'register'>>;
-  let routerSpy: Mocked<Pick<Router, 'navigate'>>;
+  let navigateSpy: MockInstance;
 
   beforeEach(async () => {
     authServiceSpy = { register: vi.fn() };
-    routerSpy = { navigate: vi.fn().mockResolvedValue(true) };
 
     await TestBed.configureTestingModule({
       imports: [Register],
       providers: [
+        provideRouter([]),
         provideTranslateTesting(),
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy },
         { provide: LanguageService, useValue: { current: () => 'fr' } },
       ],
     }).compileComponents();
+
+    navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
     fixture = TestBed.createComponent(Register);
     component = fixture.componentInstance;
@@ -34,6 +35,48 @@ describe('Register', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('reveals the password while the eye is toggled on', () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector(
+      '[data-test-id="passwordInput"]',
+    );
+    const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '[data-test-id="passwordToggle"]',
+    );
+    expect(input.type).toBe('password');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(input.type).toBe('text');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(input.type).toBe('password');
+  });
+
+  it('introduces the screen under the title', () => {
+    const subtitle = fixture.nativeElement.querySelector('[data-test-id="registerSubtitle"]');
+
+    expect(subtitle).toBeTruthy();
+    expect(subtitle.textContent).toContain('Dein Konto für Rezepte und Menüpläne.');
+  });
+
+  it('states the password length rule before the first keystroke, not after it', () => {
+    const hint = fixture.nativeElement.querySelector('[data-test-id="passwordHint"]');
+
+    expect(hint).toBeTruthy();
+    expect(hint.textContent).toContain('12');
+    expect(component.registerForm.password().touched()).toBe(false);
+  });
+
+  it('links back to the login page', () => {
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector(
+      '[data-test-id="loginLink"]',
+    );
+
+    expect(link).toBeTruthy();
+    expect(link!.getAttribute('href')).toContain('login');
   });
 
   it('should require all fields', () => {
@@ -279,7 +322,7 @@ describe('Register', () => {
       password: 'long-enough-pw',
       preferredLanguage: 'fr',
     });
-    expect(routerSpy.navigate).toHaveBeenCalledExactlyOnceWith(['register', 'success']);
+    expect(navigateSpy).toHaveBeenCalledExactlyOnceWith(['register', 'success']);
     expect(fixture.nativeElement.querySelectorAll('mat-error').length).toBe(0);
   });
 

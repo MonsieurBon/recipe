@@ -6,6 +6,10 @@ $switch-track-width: 40px;
 $switch-track-height: 22px;
 $switch-thumb-size: 16px;
 $switch-thumb-inset: 3px;
+
+// The design's form-field radius (design-spec.html, `.ffield`), handed to Material as the container
+// token that the hand-drawn border then reads back off.
+$field-radius: 10px;
 @use 'assets/icons/material-icons';
 @use 'assets/fonts/roboto';
 @use 'assets/fonts/fraunces';
@@ -78,6 +82,73 @@ h2 {
     )
   );
 
+  // The design's form field (`.ffield`): a filled card with a hairline border, a 10px radius and a
+  // small muted label inside the box above the value. Material's filled appearance is its default,
+  // so a plain <mat-form-field> gets this without opting in; the controls that deviate — the
+  // `.selval` pill, the `.search` bar — are outlined and say so at their call site.
+  @include mat.form-field-overrides(
+    (
+      filled-container-color: var(--mat-sys-surface-container-lowest),
+      filled-container-shape: $field-radius,
+      // The design carries a hairline on all four sides where Material rules only the bottom edge.
+      // Collapsing the indicator hands the whole box to the border below, focus included — left at
+      // its 2px focus height it would thicken one edge of an already-ringed field.
+      filled-active-indicator-height: 0,
+      filled-focus-active-indicator-height: 0,
+      // The border alone carries hover; Material's tint over the container would wash out the card
+      // colour the field shares with the surfaces around it.
+      hover-state-layer-opacity: 0,
+      container-height: 52px,
+      container-text-size: 0.92rem,
+      // The reserved message line below each field. Its height is what spaces stacked fields apart,
+      // so the design's message type sets the gap: anything smaller closes it up and leaves the
+      // message crowding the field beneath it.
+      subscript-text-size: 0.78rem,
+      subscript-text-line-height: 1.4,
+      // The resting label doubles as the design's muted placeholder, so it starts at the value's
+      // size; Material scales it to 0.75 of that as it floats, landing on the label size drawn.
+      filled-label-text-size: 0.92rem,
+      filled-with-label-container-padding-top: 19px,
+      filled-with-label-container-padding-bottom: 6px,
+    )
+  );
+
+  // The reserved message line. Material sizes it from the subscript type and then pins the message
+  // to the top of it, which drops the text onto the field below; the design gives the line a fixed
+  // height and sits the message in the middle of it. Fields that opt out of the reserve
+  // (`subscriptSizing="dynamic"` — the search bar, the compact value pills) keep their tight fit.
+  .mat-mdc-form-field-subscript-wrapper:not(.mat-mdc-form-field-subscript-dynamic-size) {
+    min-height: layout.$field-message-line;
+
+    // Giving the message a line box as tall as the line it lives in centres the text in it by way of
+    // its own leading, so it sits clear of both the field above and the one below.
+    mat-hint,
+    mat-error {
+      line-height: layout.$field-message-line;
+    }
+  }
+
+  // Material builds the filled field without a border and rounds only its top corners, so both come
+  // from here. The selector nests under :root to outrank Material's own single-class rule whatever
+  // order the two stylesheets land in. The radius is read back off the token rather than restated,
+  // so a field that retunes its shape — the `.search` pill below — moves the border with it.
+  .mdc-text-field--filled {
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: var(--mat-form-field-filled-container-shape);
+
+    // Focus and error each restate the border colour as an inset ring, which is how the design
+    // thickens the hairline without moving the content a pixel.
+    &.mdc-text-field--focused {
+      border-color: var(--mat-sys-primary);
+      box-shadow: inset 0 0 0 1px var(--mat-sys-primary);
+    }
+
+    &.mdc-text-field--invalid {
+      border-color: var(--mat-sys-error);
+      box-shadow: inset 0 0 0 1px var(--mat-sys-error);
+    }
+  }
+
   // The account menu and the language picker menu: the design's card surface with a hairline, a
   // 14px radius and a soft shadow — lighter and rounder than the flatter, darker Material default.
   .user-menu,
@@ -104,6 +175,59 @@ h2 {
   // separate, matching the design's gap.
   .language-menu {
     margin-right: 6px;
+  }
+}
+
+// The design's authentication card (`.login-card`), shared by Anmelden and Registrieren: the card
+// surface with a hairline in place of Material's shadow, capped at the width the design draws so it
+// centres on a desktop instead of stretching, and sitting high on the screen so a phone keyboard has
+// room underneath it.
+.auth-card {
+  max-width: 340px;
+  margin: 1.6rem auto 0;
+  padding: 1.5rem 1.3rem;
+  background: var(--mat-sys-surface-container-lowest);
+  border: 1px solid var(--mat-sys-outline-variant);
+  box-shadow: none;
+
+  // The card owns its padding above, so Material's own insets on the header and content would only
+  // add a second one.
+  .mat-mdc-card-header,
+  .mat-mdc-card-content {
+    padding: 0;
+  }
+
+  .mat-mdc-card-title {
+    font-size: 1.25rem;
+  }
+
+  // The line under the title: muted, and pulled tight to the title it belongs to.
+  .subtitle {
+    margin: 0.2rem 0 1.1rem;
+    font: var(--mat-sys-body-medium);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  // The design's call to action spans the card as a pill rather than sitting as a small button at
+  // one end, so the primary action is the obvious target on a phone.
+  .cta {
+    width: 100%;
+    border-radius: 999px;
+    margin-top: 1.1rem;
+  }
+
+  // The way across to the other screen, centred under the CTA where it reads as an afterthought
+  // rather than competing with it.
+  .auth-hint {
+    margin: 1.2rem 0 0;
+    text-align: center;
+    font: var(--mat-sys-body-medium);
+    color: var(--mat-sys-on-surface-variant);
+
+    a {
+      color: var(--mat-sys-primary);
+      font-weight: 600;
+    }
   }
 }
 
@@ -154,6 +278,35 @@ h2 {
     padding-right: 0.65rem;
   }
 
+  .mat-mdc-form-field-infix {
+    min-height: unset;
+  }
+}
+
+// The eye that reveals a password field's contents. The design draws it lighter than Material's
+// stock icon, at the weight the muted label beside it carries, so it offers itself without competing
+// with the value it sits next to.
+.field-eye mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+// The design's search bar (`.search`): a full-width pill holding a leading magnifier and the
+// placeholder that names it. It keeps the filled treatment's card surface and hairline and retunes
+// only the shape and the height — with no label to sit above the value, it needs less room than a
+// form field. Each use gives the input an aria-label, since the placeholder is all that names it.
+.search {
+  @include mat.form-field-overrides(
+    (
+      filled-container-shape: 999px,
+      container-height: 42px,
+      container-vertical-padding: 9px,
+    )
+  );
+
+  // Material floors the infix at a labelled field's height, which would hold the pill open past the
+  // height set above.
   .mat-mdc-form-field-infix {
     min-height: unset;
   }

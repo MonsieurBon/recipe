@@ -18,7 +18,9 @@
   "field": {
     "username": "Username",
     "email": "Email",
-    "password": "Password"
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "validation": {
     "usernameRequired": "Username is required",
@@ -37,9 +39,15 @@
     "select": "Select language"
   },
   "login": {
+    "subtitle": "Good to have you back.",
     "usernameOrEmail": "Username or email",
     "invalidCredentials": "Invalid credentials",
     "registerHint": "No account yet?"
+  },
+  "register": {
+    "subtitle": "Your account for recipes and meal plans.",
+    "passwordHint": "At least {{min}} characters",
+    "loginHint": "Already have an account?"
   },
   "registerSuccess": {
     "title": "Registration successful",

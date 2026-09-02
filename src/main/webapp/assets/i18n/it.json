@@ -18,7 +18,9 @@
   "field": {
     "username": "Nome utente",
     "email": "Email",
-    "password": "Password"
+    "password": "Password",
+    "showPassword": "Mostra la password",
+    "hidePassword": "Nascondi la password"
   },
   "validation": {
     "usernameRequired": "Il nome utente è obbligatorio",
@@ -37,9 +39,15 @@
     "select": "Seleziona lingua"
   },
   "login": {
+    "subtitle": "Che bello rivederti.",
     "usernameOrEmail": "Nome utente o email",
     "invalidCredentials": "Credenziali non valide",
     "registerHint": "Non hai ancora un account?"
+  },
+  "register": {
+    "subtitle": "Il tuo account per ricette e menu.",
+    "passwordHint": "Almeno {{min}} caratteri",
+    "loginHint": "Hai già un account?"
   },
   "registerSuccess": {
     "title": "Registrazione riuscita",
