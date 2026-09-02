@@ -66,7 +66,10 @@ jobs:
           # `gh pr list --head` matches on branch name alone, without qualifying
           # the source repository, so confirm the resolved pull request is the
           # Dependabot one and not a same-named branch from somewhere else.
-          author=$(gh pr view "$pr" --json author --jq '.author.login')
+          # Read the author over REST, which names app accounts the same way the
+          # workflow_run payload does; gh's own commands report `app/dependabot`
+          # for the identity the payload calls `dependabot[bot]`.
+          author=$(gh api "repos/{owner}/{repo}/pulls/$pr" --jq '.user.login')
           if [ "$author" != "dependabot[bot]" ]; then
             echo "::error::#$pr on $BRANCH is authored by $author, not dependabot[bot] — refusing to merge."
             exit 1
