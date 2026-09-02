@@ -1,8 +1,9 @@
-<mat-card>
+<mat-card class="auth-card">
   <mat-card-header>
     <mat-card-title>{{ 'app.login' | translate }}</mat-card-title>
   </mat-card-header>
   <mat-card-content>
+    <p class="subtitle" data-test-id="loginSubtitle">{{ 'login.subtitle' | translate }}</p>
     <form [formRoot]="loginForm">
       <mat-form-field>
         <mat-label>{{ 'login.usernameOrEmail' | translate }}</mat-label>
@@ -22,10 +23,24 @@
         <mat-label>{{ 'field.password' | translate }}</mat-label>
         <input
           matInput
-          type="password"
+          data-test-id="passwordInput"
+          [type]="passwordVisible() ? 'text' : 'password'"
           autocomplete="current-password"
           [formField]="loginForm.password"
         />
+        <button
+          mat-icon-button
+          matSuffix
+          class="field-eye"
+          type="button"
+          data-test-id="passwordToggle"
+          [attr.aria-label]="
+            (passwordVisible() ? 'field.hidePassword' : 'field.showPassword') | translate
+          "
+          (click)="passwordVisible.set(!passwordVisible())"
+        >
+          <mat-icon>{{ passwordVisible() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
         @if (loginForm.password().touched() && loginForm.password().errors().length > 0) {
           <mat-error>{{ loginForm.password().errors()[0].message }}</mat-error>
         }
@@ -35,16 +50,14 @@
           {{ 'login.invalidCredentials' | translate }}
         </p>
       }
-      <div class="submit-row">
+      <button mat-flat-button class="cta" type="submit" [disabled]="loginForm().submitting()">
         @if (loginForm().submitting()) {
           <mat-spinner diameter="20"></mat-spinner>
         }
-        <button mat-flat-button type="submit" [disabled]="loginForm().submitting()">
-          {{ 'app.login' | translate }}
-        </button>
-      </div>
+        {{ 'app.login' | translate }}
+      </button>
     </form>
-    <p class="register-hint">
+    <p class="auth-hint">
       {{ 'login.registerHint' | translate }}
       <a routerLink="/register" data-test-id="registerLink">{{ 'app.register' | translate }}</a>
     </p>

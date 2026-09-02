@@ -18,7 +18,9 @@
   "field": {
     "username": "Benutzername",
     "email": "Email",
-    "password": "Passwort"
+    "password": "Passwort",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen"
   },
   "validation": {
     "usernameRequired": "Benutzername ist erforderlich",
@@ -37,9 +39,15 @@
     "select": "Sprache auswählen"
   },
   "login": {
+    "subtitle": "Schön, bist du wieder da.",
     "usernameOrEmail": "Benutzername oder Email",
     "invalidCredentials": "Ungültige Anmeldedaten",
     "registerHint": "Noch kein Konto?"
+  },
+  "register": {
+    "subtitle": "Dein Konto für Rezepte und Menüpläne.",
+    "passwordHint": "Mindestens {{min}} Zeichen",
+    "loginHint": "Schon ein Konto?"
   },
   "registerSuccess": {
     "title": "Registrierung erfolgreich",

@@ -128,6 +128,39 @@ describe('Login', () => {
     expect(navigateByUrlSpy).toHaveBeenCalledExactlyOnceWith('/');
   });
 
+  it('reveals the password while the eye is toggled on', () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector(
+      '[data-test-id="passwordInput"]',
+    );
+    const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '[data-test-id="passwordToggle"]',
+    );
+    expect(input.type).toBe('password');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(input.type).toBe('text');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(input.type).toBe('password');
+  });
+
+  it('keeps the password eye out of the form submission', () => {
+    const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '[data-test-id="passwordToggle"]',
+    );
+
+    expect(toggle.type).toBe('button');
+  });
+
+  it('greets the returning visitor under the title', () => {
+    const subtitle = fixture.nativeElement.querySelector('[data-test-id="loginSubtitle"]');
+
+    expect(subtitle).toBeTruthy();
+    expect(subtitle.textContent).toContain('Schön, bist du wieder da.');
+  });
+
   it('links to the registration page', () => {
     const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector(
       '[data-test-id="registerLink"]',

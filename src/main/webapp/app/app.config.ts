@@ -46,9 +46,16 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => inject(AuthService).restoreSession()),
     provideRouter(routes),
     { provide: TitleStrategy, useClass: TranslatedTitleStrategy },
+    // The design's form field is a filled card with its label inside the box, which is Material's
+    // filled appearance; styles.scss shapes it. The controls drawn differently — the `.selval` pill
+    // — ask for the outlined one at their call site.
     {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-      useValue: { appearance: 'outline' } as MatFormFieldDefaultOptions,
+      // The design draws no required marker on any field it shows, anywhere. Required is the norm
+      // here, so an asterisk would end up on nearly every field and distinguish nothing; a field
+      // that is genuinely optional says so in its own label instead, marking the exception rather
+      // than the rule.
+      useValue: { appearance: 'fill', hideRequiredMarker: true } as MatFormFieldDefaultOptions,
     },
     {
       provide: MAT_CARD_CONFIG,

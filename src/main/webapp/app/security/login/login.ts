@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
-import { MatError, MatFormField, MatInput, MatLabel } from '@angular/material/input';
+import { MatError, MatFormField, MatInput, MatLabel, MatSuffix } from '@angular/material/input';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconButton } from '@angular/material/button';
 import { disabled, form, FormField, FormRoot, maxLength, required } from '@angular/forms/signals';
 import { MatButton } from '@angular/material/button';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
@@ -22,7 +24,10 @@ import { AuthService } from '../auth.service';
     FormRoot,
     MatLabel,
     MatButton,
+    MatIcon,
+    MatIconButton,
     MatProgressSpinner,
+    MatSuffix,
     RouterLink,
     TranslatePipe,
   ],
@@ -43,6 +48,10 @@ export class Login {
   // The backend answers a wrong username/password with a single 401; there is no field-level
   // detail to attach, so the failure surfaces as one form-level message instead.
   readonly loginFailed = signal(false);
+
+  // The eye on the password field: revealing what was typed is how a typo is caught, since there is
+  // no second field to confirm it against.
+  readonly passwordVisible = signal(false);
 
   readonly loginModel = signal({
     usernameOrEmail: '',

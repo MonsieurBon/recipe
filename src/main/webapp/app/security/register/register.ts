@@ -1,6 +1,15 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
-import { MatError, MatFormField, MatInput, MatLabel } from '@angular/material/input';
+import {
+  MatError,
+  MatFormField,
+  MatHint,
+  MatInput,
+  MatLabel,
+  MatSuffix,
+} from '@angular/material/input';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconButton } from '@angular/material/button';
 import {
   disabled,
   email,
@@ -14,7 +23,7 @@ import {
 } from '@angular/forms/signals';
 import { MatButton } from '@angular/material/button';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../auth.service';
 import { LanguageService } from '../../i18n/language.service';
@@ -28,12 +37,17 @@ import { LanguageService } from '../../i18n/language.service';
     MatCard,
     MatError,
     MatFormField,
+    MatHint,
     MatInput,
     FormField,
     FormRoot,
     MatLabel,
     MatButton,
+    MatIcon,
+    MatIconButton,
     MatProgressSpinner,
+    MatSuffix,
+    RouterLink,
     TranslatePipe,
   ],
   templateUrl: './register.html',
@@ -59,6 +73,14 @@ export class Register {
   // characters (umlauts, emoji) hit that ceiling below 72 characters, so the byte length is
   // validated separately from the character count.
   private static readonly MAX_PASSWORD_BYTES = 72;
+
+  // The floor is stated on the field as a standing hint before the first keystroke rather than
+  // sprung as an error afterwards, so the template needs to read it.
+  readonly minPasswordLength = Register.MIN_PASSWORD_LENGTH;
+
+  // The eye on the password field: revealing what was typed is how a typo is caught, since there is
+  // no second field to confirm it against.
+  readonly passwordVisible = signal(false);
 
   registerModel = signal({
     username: '',

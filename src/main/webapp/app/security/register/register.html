@@ -1,8 +1,9 @@
-<mat-card>
+<mat-card class="auth-card">
   <mat-card-header>
     <mat-card-title>{{ 'app.register' | translate }}</mat-card-title>
   </mat-card-header>
   <mat-card-content>
+    <p class="subtitle" data-test-id="registerSubtitle">{{ 'register.subtitle' | translate }}</p>
     <form [formRoot]="registerForm">
       <mat-form-field>
         <mat-label>{{ 'field.username' | translate }}</mat-label>
@@ -20,19 +21,44 @@
       </mat-form-field>
       <mat-form-field>
         <mat-label>{{ 'field.password' | translate }}</mat-label>
-        <input matInput type="password" [formField]="registerForm.password" />
+        <input
+          matInput
+          data-test-id="passwordInput"
+          [type]="passwordVisible() ? 'text' : 'password'"
+          autocomplete="new-password"
+          [formField]="registerForm.password"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          class="field-eye"
+          type="button"
+          data-test-id="passwordToggle"
+          [attr.aria-label]="
+            (passwordVisible() ? 'field.hidePassword' : 'field.showPassword') | translate
+          "
+          (click)="passwordVisible.set(!passwordVisible())"
+        >
+          <mat-icon>{{ passwordVisible() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
         @if (registerForm.password().touched() && registerForm.password().errors().length > 0) {
           <mat-error>{{ registerForm.password().errors()[0].message }}</mat-error>
+        } @else {
+          <mat-hint data-test-id="passwordHint">
+            {{ 'register.passwordHint' | translate: { min: minPasswordLength } }}
+          </mat-hint>
         }
       </mat-form-field>
-      <div class="submit-row">
+      <button mat-flat-button class="cta" type="submit" [disabled]="registerForm().submitting()">
         @if (registerForm().submitting()) {
           <mat-spinner diameter="20"></mat-spinner>
         }
-        <button mat-flat-button type="submit" [disabled]="registerForm().submitting()">
-          {{ 'app.register' | translate }}
-        </button>
-      </div>
+        {{ 'app.register' | translate }}
+      </button>
     </form>
+    <p class="auth-hint">
+      {{ 'register.loginHint' | translate }}
+      <a routerLink="/login" data-test-id="loginLink">{{ 'app.login' | translate }}</a>
+    </p>
   </mat-card-content>
 </mat-card>

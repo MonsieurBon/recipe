@@ -3,3 +3,9 @@
 // at the bottom edge. Kept here as a single source so those offsets can never drift out of lockstep
 // with the bar's height.
 $bottom-nav-height: 72px;
+
+// The message line every form field reserves below itself, so an error or a hint appearing moves
+// nothing around it. This line is also what spaces stacked fields apart. Kept here as a single
+// source because a form-level message — one belonging to no single field — has to claim exactly
+// this much to sit in the line rather than add to it.
+$field-message-line: 1.35rem;
