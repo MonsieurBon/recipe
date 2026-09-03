@@ -1,15 +1,31 @@
 name: Build recipe
 
+# Pull requests only. A push to a pull request branch would repeat this run
+# commit for commit, and a push to main is already built by the release
+# workflow.
+#
+# auto-merge.yml watches this workflow by name and requires the run to have
+# come from a pull request — renaming it or widening the trigger silently
+# stops Dependabot auto-merge.
 on:
-  push:
-    branches: [ "**" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "**" ]
+
+# Nothing here writes to the repository.
+permissions:
+  contents: read
+
+# A new commit on a pull request supersedes six runners at once. Cancelling
+# them leaves the run at `cancelled`, which auto-merge.yml ignores — the
+# superseding run is what reports success to it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  lint-frontend:
+    name: lint frontend
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Node.js 24.x
@@ -18,27 +34,82 @@ jobs:
           node-version: '24.16.0'
           cache: 'npm'
       - run: npm ci
-      - name: lint frontend
-        run: npm run lint
+      - name: lint
+        run: npm run lint:check
+      - name: format
+        run: npm run format:check
 
+  lint-backend:
+    name: lint backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up JDK
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
           java-version: '25'
           distribution: 'temurin'
           cache: maven
-      - name: lint backend
+      - name: spotless
         run: mvn -B spotless:check
 
-      - name: test frontend
+  test-frontend:
+    name: test frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node.js 24.x
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.16.0'
+          cache: 'npm'
+      - run: npm ci
+      - name: test
         run: npm run test:ci
 
-      - name: test backend
-        run: mvn -B test
+  test-backend:
+    name: test backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up JDK
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+      # The frontend has its own jobs above; without these the Maven build
+      # fetches its own Node and repeats the whole frontend chain here.
+      - name: test
+        run: mvn -B test -Dskip.npm=true -Dskip.installnodenpm=true
 
-      - name: integration tests
+  integration-tests:
+    name: integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up JDK
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+      - name: verify
         run: mvn -B -Pintegration-tests verify
 
+  package:
+    name: package + image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up JDK
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+      # Packaging builds the frontend into the jar, so this job runs it rather
+      # than skipping it like the backend jobs do.
       - name: build backend
         run: mvn -B clean package -DskipTests=true
 
