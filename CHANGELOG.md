@@ -1,3 +1,10 @@
+# [2.20.0](https://github.com/MonsieurBon/recipes/compare/v2.19.0...v2.20.0) (2026-09-03)
+
+
+### Features
+
+* Adopt the design's form fields on login, register and admin search ([c3826c3](https://github.com/MonsieurBon/recipes/commit/c3826c35114be303c88018cb08df74f13f7745a5)), closes [#346](https://github.com/MonsieurBon/recipes/issues/346)
+
 # [2.19.0](https://github.com/MonsieurBon/recipes/compare/v2.18.0...v2.19.0) (2026-08-20)
 
 
