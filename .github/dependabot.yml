@@ -9,8 +9,13 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+  # "/" covers .github/workflows only. Composite actions are found by naming the
+  # directory that holds each action.yml, so the glob keeps new ones covered
+  # without a matching edit here.
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: "daily"
   - package-ecosystem: "maven"
